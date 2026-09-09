@@ -57,7 +57,7 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Little achievements, big smiles</div>
+  <div class="sub">Little achievements, big smiles · Cloud Sync V12</div>
 
   <div class="score"><b id="points">0</b>⭐ Home points</div>
   <div class="today">Today earned: <b id="todayEarned">0</b> ⭐</div>
@@ -111,15 +111,10 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
       </div>
 
       <h3>☁️ Cloud sync</h3>
-      <div class="small">Use the same Firebase parent login on iPhone, Android and computer. Then points, activities, rewards and history stay in sync automatically.</div>
+      <div class="small">Use one Firebase account on both your phone and computer. Then points, activities, rewards and history will stay in sync.</div>
 
-      <div id="firebaseSetup">
-        <label>Firebase API key</label><input id="fbApiKey" placeholder="AIza...">
-        <label>Auth domain</label><input id="fbAuthDomain" placeholder="your-project.firebaseapp.com">
-        <label>Project ID</label><input id="fbProjectId" placeholder="your-project-id">
-        <label>App ID</label><input id="fbAppId" placeholder="1:123...:web:abc...">
-        <button class="btn secondary wide" id="saveFirebase">Save Firebase settings</button>
-        <div class="small" style="margin-top:7px">After saving, reload the page once.</div>
+      <div id="firebaseSetup" class="ok">
+        ✅ Firebase is built into this version. No API key entry is needed.
       </div>
 
       <div id="loginBox" class="hidden">
@@ -131,6 +126,7 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
           <button class="btn danger hidden" id="signOutBtn">Sign out</button>
         </div>
         <div id="authMessage" class="small"></div>
+        <div class="small" style="margin-top:8px">Use the same parent email/password on iPhone, Android and computer.</div>
       </div>
 
       <div id="storageNotice" class="notice hidden">This browser is not allowing local storage. Use the GitHub Pages website rather than opening the HTML file directly.</div>
@@ -153,35 +149,62 @@ const DEFAULT_REWARDS = [
   ["🍕","Choose dinner",60],["🎁","Small toy or book",100],["🎢","Special outing",200]
 ];
 
-function safeParse(v, fallback){ try{return JSON.parse(v)}catch{return fallback} }
+function safeParse(v, fallback){
+  if(v === null || v === undefined || v === "") return fallback;
+  try{
+    const parsed=JSON.parse(v);
+    return parsed === null ? fallback : parsed;
+  }catch{return fallback}
+}
 function storageGet(k){ try{return localStorage.getItem(k)}catch{return null} }
 function storageSet(k,v){ try{localStorage.setItem(k,v);return true}catch{return false} }
+function firstStored(...keys){
+  for(const k of keys){
+    const v=storageGet(k);
+    if(v !== null && v !== undefined && v !== "") return v;
+  }
+  return null;
+}
 function dateKey(d=new Date()){
   const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
 
+// Recover data from earlier versions whenever it is still present in this browser.
 let state = {
-  childName: storageGet("kpName10") || "Aliyah",
-  points: Number(storageGet("kpPts10") || 0),
-  activities: safeParse(storageGet("kpA10"), DEFAULT_ACTIVITIES),
-  rewards: safeParse(storageGet("kpR10"), DEFAULT_REWARDS),
-  dailyEarned: safeParse(storageGet("kpDaily10"), {}),
-  dailyDetails: safeParse(storageGet("kpDetails10"), {})
+  childName: firstStored("kpName12","kpName10","kpName4") || "Aliyah",
+  points: Math.max(0,Number(firstStored("kpPts12","kpPts10","kpPts4") || 0)||0),
+  activities: safeParse(firstStored("kpA12","kpA10","kpA4"), DEFAULT_ACTIVITIES.map(x=>x.slice())),
+  rewards: safeParse(firstStored("kpR12","kpR10","kpR4"), DEFAULT_REWARDS.map(x=>x.slice())),
+  dailyEarned: safeParse(firstStored("kpDaily12","kpDaily10","kpDaily5"), {}),
+  dailyDetails: safeParse(firstStored("kpDetails12","kpDetails10","kpDailyDetails9"), {})
 };
+if(!Array.isArray(state.activities)) state.activities=DEFAULT_ACTIVITIES.map(x=>x.slice());
+if(!Array.isArray(state.rewards)) state.rewards=DEFAULT_REWARDS.map(x=>x.slice());
+if(!state.dailyEarned || typeof state.dailyEarned!=="object") state.dailyEarned={};
+if(!state.dailyDetails || typeof state.dailyDetails!=="object") state.dailyDetails={};
 
 let firebaseReady=false, auth=null, db=null, currentUser=null, unsub=null;
-const fbConfig = safeParse(storageGet("kpFirebase10"), {});
+
+// Your Firebase web configuration. These values are public identifiers used by Firebase web apps.
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDCWK7B-90Wg5x8iQqqeX3eUiu4WPdO9Yo",
+  authDomain: "kids-points-f328c.firebaseapp.com",
+  projectId: "kids-points-f328c",
+  appId: "1:239937856623:web:d5702e442fa009e462999a"
+};
 
 function saveLocal(){
-  const ok = [
-    storageSet("kpName10",state.childName),
-    storageSet("kpPts10",String(state.points)),
-    storageSet("kpA10",JSON.stringify(state.activities)),
-    storageSet("kpR10",JSON.stringify(state.rewards)),
-    storageSet("kpDaily10",JSON.stringify(state.dailyEarned)),
-    storageSet("kpDetails10",JSON.stringify(state.dailyDetails))
-  ].every(Boolean);
+  const pairs=[
+    ["kpName12",state.childName],["kpPts12",String(state.points)],
+    ["kpA12",JSON.stringify(state.activities)],["kpR12",JSON.stringify(state.rewards)],
+    ["kpDaily12",JSON.stringify(state.dailyEarned)],["kpDetails12",JSON.stringify(state.dailyDetails)],
+    // Backup in the older keys too, so returning to V8/V9 does not look empty.
+    ["kpName4",state.childName],["kpPts4",String(state.points)],
+    ["kpA4",JSON.stringify(state.activities)],["kpR4",JSON.stringify(state.rewards)],
+    ["kpDaily5",JSON.stringify(state.dailyEarned)],["kpDailyDetails9",JSON.stringify(state.dailyDetails)]
+  ];
+  const ok=pairs.map(([k,v])=>storageSet(k,v)).every(Boolean);
   $("storageNotice").classList.toggle("hidden",ok);
 }
 
@@ -333,31 +356,11 @@ $("addReward").onclick=()=>{state.rewards.push(["🎁","New reward",20]);persist
 $("addManual").onclick=()=>addPoints(Number($("manualPoints").value)||0,"Manual points");
 $("subManual").onclick=()=>{state.points=Math.max(0,state.points-(Number($("manualPoints").value)||0));persist()};
 
-["fbApiKey","fbAuthDomain","fbProjectId","fbAppId"].forEach(id=>{
-  const map={fbApiKey:"apiKey",fbAuthDomain:"authDomain",fbProjectId:"projectId",fbAppId:"appId"};
-  $(id).value=fbConfig[map[id]]||"";
-});
-
-$("saveFirebase").onclick=()=>{
-  const cfg={
-    apiKey:$("fbApiKey").value.trim(),
-    authDomain:$("fbAuthDomain").value.trim(),
-    projectId:$("fbProjectId").value.trim(),
-    appId:$("fbAppId").value.trim()
-  };
-  storageSet("kpFirebase10",JSON.stringify(cfg));
-  alert("Firebase settings saved. Reload the page once.");
-};
-
 async function initFirebase(){
-  const cfg=safeParse(storageGet("kpFirebase10"),{});
-  if(!(cfg.apiKey&&cfg.authDomain&&cfg.projectId&&cfg.appId)){
-    $("syncBadge").textContent="☁️ Local only";
-    $("syncText").textContent="Add Firebase settings in Parent Mode to sync devices.";
-    return;
-  }
-
+  $("syncBadge").textContent="☁️ Connecting…";
+  $("syncText").textContent="Connecting to Firebase.";
   try{
+    const cfg=FIREBASE_CONFIG;
     const appMod=await import("https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js");
     const authMod=await import("https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js");
     const fsMod=await import("https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js");
@@ -414,8 +417,10 @@ async function initFirebase(){
       });
     });
   }catch(e){
-    $("syncBadge").textContent="⚠️ Sync setup error";
-    $("syncText").textContent=e.message;
+    console.error(e);
+    $("syncBadge").textContent="⚠️ Cloud connection error";
+    $("syncText").textContent=e && e.message ? e.message : "Could not connect to Firebase.";
+    $("loginBox").classList.remove("hidden");
   }
 }
 
@@ -433,6 +438,7 @@ $("createAccountBtn").onclick=async()=>{
 };
 $("signOutBtn").onclick=()=>window.__fb.signOut(auth);
 
+saveLocal();
 render();
 initFirebase();
 </script>
