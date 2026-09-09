@@ -19,6 +19,13 @@
 
 #activityEditor .row .btn, #rewardEditor .row .btn{min-width:46px;min-height:42px;font-size:18px}
 #activityEditor .row, #rewardEditor .row{flex-wrap:wrap}
+
+.daily-detail{background:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 3px 12px #00000010;margin-top:10px}
+.daily-entry{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eee}
+.daily-entry:last-child{border-bottom:0}
+.daily-entry-name{font-weight:700}
+.daily-entry-pts{font-weight:900;color:#168a45;white-space:nowrap}
+.daily-empty{color:#999;padding:6px 0}
 </style>
 </head>
 <body>
@@ -40,6 +47,9 @@
 
     <h2 class="section">📅 Daily Points</h2>
     <div id="dailyHistory" class="history"></div>
+
+    <h2 class="section">🧾 What was earned today</h2>
+    <div id="todayDetails" class="daily-detail"></div>
   </section>
 
   <section id="parentView" class="hidden">
@@ -96,10 +106,11 @@ let rewards=safeParse(storageGet('kpR4'),DEFAULT_REWARDS.map(x=>x.slice()));
 let points=Math.max(0,Number(storageGet('kpPts4')||0)||0);
 let childName=storageGet('kpName4')||'Aliyah';
 let dailyEarned=safeParse(storageGet('kpDaily5'),{});
+let dailyDetails=safeParse(storageGet('kpDailyDetails9'),{});
 
 const $=id=>document.getElementById(id);
 function say(text){$('msg').textContent=text;clearTimeout(say.t);say.t=setTimeout(()=>{$('msg').textContent=''},2200)}
-function persist(){storageSet('kpA4',JSON.stringify(activities));storageSet('kpR4',JSON.stringify(rewards));storageSet('kpPts4',String(points));storageSet('kpName4',childName);storageSet('kpDaily5',JSON.stringify(dailyEarned));render()}
+function persist(){storageSet('kpA4',JSON.stringify(activities));storageSet('kpR4',JSON.stringify(rewards));storageSet('kpPts4',String(points));storageSet('kpName4',childName);storageSet('kpDaily5',JSON.stringify(dailyEarned));storageSet('kpDailyDetails9',JSON.stringify(dailyDetails));render()}
 function dateKey(d=new Date()){
   const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
   return y+'-'+m+'-'+day;
@@ -107,14 +118,56 @@ function dateKey(d=new Date()){
 function addPoints(n,label){
   n=Number(n)||0;
   points=Math.max(0,points+n);
+
   if(n>0){
     const key=dateKey();
     dailyEarned[key]=(Number(dailyEarned[key])||0)+n;
+    if(!Array.isArray(dailyDetails[key])) dailyDetails[key]=[];
+    dailyDetails[key].push({
+      time:new Date().toISOString(),
+      label:label||'Manual points',
+      pts:n
+    });
   }
+
   persist();
   if(label)say((n>=0?'🎉 +':'')+n+' point'+(Math.abs(n)===1?'':'s')+' for '+label+'!');
 }
 function redeem(i){const r=rewards[i];const cost=Math.max(0,Number(r[2])||0);if(points<cost){alert('You need '+(cost-points)+' more points for '+r[1]+'.');say('⭐ You need '+(cost-points)+' more points.');return}if(!confirm('Redeem '+r[1]+' for '+cost+' points?'))return;points-=cost;persist();alert('🎁 '+r[1]+' redeemed! '+points+' points remaining.');say('🎁 '+r[1]+' redeemed!')}
+
+function renderTodayDetails(){
+  const box=$('todayDetails');
+  const key=dateKey();
+  const entries=Array.isArray(dailyDetails[key]) ? dailyDetails[key] : [];
+  box.innerHTML='';
+
+  if(entries.length===0){
+    const empty=document.createElement('div');
+    empty.className='daily-empty';
+    empty.textContent='No points earned yet today.';
+    box.appendChild(empty);
+    return;
+  }
+
+  const grouped={};
+  entries.forEach(e=>{
+    const name=e.label||'Activity';
+    grouped[name]=(grouped[name]||0)+(Number(e.pts)||0);
+  });
+
+  Object.entries(grouped).forEach(([name,pts])=>{
+    const row=document.createElement('div');
+    row.className='daily-entry';
+    const left=document.createElement('span');
+    left.className='daily-entry-name';
+    left.textContent=name;
+    const right=document.createElement('span');
+    right.className='daily-entry-pts';
+    right.textContent='+'+pts+' ⭐';
+    row.append(left,right);
+    box.appendChild(row);
+  });
+}
 
 function renderDaily(){
   const todayKey=dateKey();
@@ -145,6 +198,7 @@ function render(){
   $('childName').value=childName;
   $('storageNotice').classList.toggle('hidden',storageOK);
   renderDaily();
+  renderTodayDetails();
 
   const ac=$('activities'); ac.innerHTML='';
   activities.forEach((a,i)=>{const b=document.createElement('button');b.type='button';b.className='card';b.innerHTML='<span class="emoji"></span><div class="name"></div><div class="plus"></div>';b.querySelector('.emoji').textContent=a[0];b.querySelector('.name').textContent=a[1];b.querySelector('.plus').textContent='+'+a[2]+' ⭐';b.addEventListener('click',()=>addPoints(Number(a[2])||0,a[1]));ac.appendChild(b)});
