@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kids Points">
+<title>Kids Points</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f4ff;color:#222;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.app{max-width:650px;margin:auto;padding:18px 16px 42px}.top{text-align:center}.top h1{margin:6px 0 2px;font-size:34px}.small{font-size:13px;color:#777}.score{background:#7c3cff;color:#fff;border-radius:25px;padding:20px;text-align:center;margin:16px 0}.score b{font-size:56px;display:block;line-height:1.05}.tabs{display:flex;background:#ececec;border-radius:16px;padding:5px;margin:15px 0}.tabs button{flex:1;border:0;padding:13px 8px;border-radius:12px;font-weight:800;background:transparent;font-size:16px}.tabs .active{background:#fff;color:#7c3cff;box-shadow:0 1px 5px #00000012}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card,.reward,.panel{background:#fff;border:0;border-radius:20px;padding:15px;box-shadow:0 3px 12px #00000010}.card{text-align:center;min-height:132px;width:100%}.emoji{font-size:40px}.name{font-weight:800;margin:7px 0;word-break:break-word}.plus{color:#168a45;font-size:20px;font-weight:900}.reward{width:100%;display:flex;justify-content:space-between;gap:12px;align-items:center;margin:9px 0;text-align:left;font-weight:800}.cost{color:#7c3cff;white-space:nowrap}.section{margin:24px 2px 11px;font-size:22px}.hidden{display:none!important}.row{display:flex;gap:8px;margin:8px 0;align-items:center}.input{width:100%;padding:12px;border:2px solid #eee;border-radius:12px;font-size:16px;background:#fff}.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;background:#7c3cff;color:#fff;font-size:15px}.danger{background:#ffecec;color:#b00020}.secondary{background:#eef4ff;color:#2769d8}.editrow{background:#fafafa;border-radius:14px;padding:10px;margin:8px 0}.editrow input{min-width:0}.msg{text-align:center;color:#7c3cff;font-weight:800;min-height:25px;margin:8px}.lock{background:#fff;border-radius:20px;padding:16px}.footer{text-align:center;color:#999;font-size:12px;margin-top:25px}.notice{background:#fff7da;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:13px;color:#6d5700}.wide{width:100%;margin-top:8px}
+.history{background:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 3px 12px #00000010}
+.history-row{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid #eee}
+.history-row:last-child{border-bottom:0}
+.history-date{font-weight:700}
+.history-points{font-weight:900;color:#168a45}
+.today-earned{background:#eef9f1;border-radius:16px;padding:12px 14px;margin:10px 0 14px;text-align:center}
+.today-earned b{font-size:28px;color:#168a45}
+@media(min-width:520px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+#activityEditor .row .btn, #rewardEditor .row .btn{min-width:46px;min-height:42px;font-size:18px}
+#activityEditor .row, #rewardEditor .row{flex-wrap:wrap}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top"><h1 id="title">🌟 Kids Points</h1><div class="small">Little achievements, big smiles</div></div>
+  <div class="score"><b id="points">0</b>⭐ Home points</div>
+  <div class="today-earned">Today earned: <b id="todayEarned">0</b> ⭐</div>
+  <div id="msg" class="msg"></div>
+  <div class="tabs">
+    <button id="childTab" class="active" type="button">👧 Activities</button>
+    <button id="parentTab" type="button">👩 Parent Mode</button>
+  </div>
+
+  <section id="childView">
+    <h2 class="section">Today's Activities</h2>
+    <div id="activities" class="grid"></div>
+    <h2 class="section">🎁 Rewards</h2>
+    <div id="rewards"></div>
+
+    <h2 class="section">📅 Daily Points</h2>
+    <div id="dailyHistory" class="history"></div>
+  </section>
+
+  <section id="parentView" class="hidden">
+    <div class="lock">
+      <h2 style="margin-top:0">🔐 Parent Mode</h2>
+      <p class="small">Edit the name, activities, point values and rewards directly on your phone.</p>
+      <div id="storageNotice" class="notice hidden">This iPhone file preview is not allowing permanent browser storage. Editing still works now, but changes may not remain after you close the file. Once we put the app on a free web address, saving will work reliably.</div>
+
+      <label><strong>👧 Child's name</strong></label>
+      <input id="childName" class="input" placeholder="Child's name" autocomplete="off">
+
+      <h3>Activities</h3><div class="small">Use ↑ and ↓ to change the display order.</div>
+      <div id="activityEditor"></div>
+      <button id="addActivityBtn" class="btn wide" type="button">➕ Add activity</button>
+
+      <h3>Rewards</h3><div class="small">Use ↑ and ↓ to change the display order.</div>
+      <div id="rewardEditor"></div>
+      <button id="addRewardBtn" class="btn wide" type="button">➕ Add reward</button>
+
+      <h3>⭐ Manual points</h3>
+      <div class="row">
+        <button class="btn" data-points="1" type="button">+1</button>
+        <button class="btn" data-points="5" type="button">+5</button>
+        <button class="btn secondary" data-points="-1" type="button">−1</button>
+        <button id="resetBtn" class="btn danger" type="button">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">Settings, points and daily history are saved on this device when browser storage is available.</div>
+</main>
+<script>
+(function(){
+'use strict';
+const DEFAULT_ACTIVITIES=[
+['🎹','Piano & Theory',1],['🧮','Math IXL & notebook 2',1],['📚','Reading',1],['🥁','Drum Practice',1],
+['⭐','Gita Practice',1],['⛳','Golf Class',1],['😊','Get up Happily Ready for School',1],['😴','Go to Bed B4 7:40pm',1],
+['💃','Dance Class',1],['🥋','Taekwondo Class',1],['🏊','Swimming Class',1],['🎤','Singing Class',1],
+['🎹','Piano Class',1],['🧹','Tidy up Chores',1],['🥗','Eat Healthy Food',1],['🎓','Homework',1],
+['📣','Speech Class',1],['📣','Speech Practice',1],['🚗','Easy Drop off',1],['🚗','Easy Pick up',1]
+];
+const DEFAULT_REWARDS=[
+['🍦','Choose a dessert',20],['📱','30 minutes iPad',30],['🎬','Choose a family movie',50],
+['🍕','Choose dinner',60],['🎁','Small toy or book',100],['🎢','Special outing',200]
+];
+
+let storageOK=true;
+function storageGet(k){try{return localStorage.getItem(k)}catch(e){storageOK=false;return null}}
+function storageSet(k,v){try{localStorage.setItem(k,v)}catch(e){storageOK=false}}
+function safeParse(s,fallback){try{return s?JSON.parse(s):fallback}catch(e){return fallback}}
+
+let activities=safeParse(storageGet('kpA4'),DEFAULT_ACTIVITIES.map(x=>x.slice()));
+let rewards=safeParse(storageGet('kpR4'),DEFAULT_REWARDS.map(x=>x.slice()));
+let points=Math.max(0,Number(storageGet('kpPts4')||0)||0);
+let childName=storageGet('kpName4')||'Aliyah';
+let dailyEarned=safeParse(storageGet('kpDaily5'),{});
+
+const $=id=>document.getElementById(id);
+function say(text){$('msg').textContent=text;clearTimeout(say.t);say.t=setTimeout(()=>{$('msg').textContent=''},2200)}
+function persist(){storageSet('kpA4',JSON.stringify(activities));storageSet('kpR4',JSON.stringify(rewards));storageSet('kpPts4',String(points));storageSet('kpName4',childName);storageSet('kpDaily5',JSON.stringify(dailyEarned));render()}
+function dateKey(d=new Date()){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+function addPoints(n,label){
+  n=Number(n)||0;
+  points=Math.max(0,points+n);
+  if(n>0){
+    const key=dateKey();
+    dailyEarned[key]=(Number(dailyEarned[key])||0)+n;
+  }
+  persist();
+  if(label)say((n>=0?'🎉 +':'')+n+' point'+(Math.abs(n)===1?'':'s')+' for '+label+'!');
+}
+function redeem(i){const r=rewards[i];const cost=Math.max(0,Number(r[2])||0);if(points<cost){alert('You need '+(cost-points)+' more points for '+r[1]+'.');say('⭐ You need '+(cost-points)+' more points.');return}if(!confirm('Redeem '+r[1]+' for '+cost+' points?'))return;points-=cost;persist();alert('🎁 '+r[1]+' redeemed! '+points+' points remaining.');say('🎁 '+r[1]+' redeemed!')}
+
+function renderDaily(){
+  const todayKey=dateKey();
+  $('todayEarned').textContent=Number(dailyEarned[todayKey]||0);
+
+  const box=$('dailyHistory');
+  box.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=new Date();
+    d.setDate(d.getDate()-i);
+    const key=dateKey(d);
+    const row=document.createElement('div');
+    row.className='history-row';
+    const left=document.createElement('span');
+    left.className='history-date';
+    left.textContent=i===0?'Today':(i===1?'Yesterday':d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}));
+    const right=document.createElement('span');
+    right.className='history-points';
+    right.textContent=(Number(dailyEarned[key]||0))+' ⭐';
+    row.append(left,right);
+    box.appendChild(row);
+  }
+}
+
+function render(){
+  $('points').textContent=points;
+  $('title').textContent=childName?'🌟 '+childName:'🌟 Kids Points';
+  $('childName').value=childName;
+  $('storageNotice').classList.toggle('hidden',storageOK);
+  renderDaily();
+
+  const ac=$('activities'); ac.innerHTML='';
+  activities.forEach((a,i)=>{const b=document.createElement('button');b.type='button';b.className='card';b.innerHTML='<span class="emoji"></span><div class="name"></div><div class="plus"></div>';b.querySelector('.emoji').textContent=a[0];b.querySelector('.name').textContent=a[1];b.querySelector('.plus').textContent='+'+a[2]+' ⭐';b.addEventListener('click',()=>addPoints(Number(a[2])||0,a[1]));ac.appendChild(b)});
+
+  const rw=$('rewards'); rw.innerHTML='';
+  rewards.forEach((r,i)=>{const b=document.createElement('button');b.type='button';b.className='reward';const left=document.createElement('span');left.textContent=r[0]+' '+r[1];const right=document.createElement('span');right.className='cost';right.textContent=r[2]+' ⭐';b.append(left,right);b.addEventListener('click',()=>redeem(i));rw.appendChild(b)});
+  renderEditors();
+}
+
+function input(value,opts={}){const el=document.createElement('input');el.className='input';el.value=value; if(opts.type)el.type=opts.type;if(opts.min!=null)el.min=opts.min;if(opts.maxWidth)el.style.maxWidth=opts.maxWidth;return el}
+function renderEditors(){
+  const ae=$('activityEditor');ae.innerHTML='';
+  activities.forEach((a,i)=>{const box=document.createElement('div');box.className='editrow';const row=document.createElement('div');row.className='row';
+const up=document.createElement('button');up.type='button';up.className='btn';up.textContent='⬆️';up.title='Move up';up.disabled=i===0;
+const down=document.createElement('button');down.type='button';down.className='btn';down.textContent='⬇️';down.title='Move down';down.disabled=i===activities.length-1;
+const emo=input(a[0],{maxWidth:'68px'});const name=input(a[1]);const pts=input(a[2],{type:'number',min:0,maxWidth:'78px'});const del=document.createElement('button');del.type='button';del.className='btn danger';del.textContent='×';
+up.addEventListener('click',()=>{if(i>0){[activities[i-1],activities[i]]=[activities[i],activities[i-1]];persist();showParent()}});
+down.addEventListener('click',()=>{if(i<activities.length-1){[activities[i+1],activities[i]]=[activities[i],activities[i+1]];persist();showParent()}});
+emo.addEventListener('change',()=>{activities[i][0]=emo.value||'⭐';persist()});name.addEventListener('change',()=>{activities[i][1]=name.value||'New activity';persist()});pts.addEventListener('change',()=>{activities[i][2]=Math.max(0,Number(pts.value)||0);persist()});del.addEventListener('click',()=>{activities.splice(i,1);persist()});
+row.append(up,down,emo,name,pts,del);box.appendChild(row);ae.appendChild(box)});
+
+  const re=$('rewardEditor');re.innerHTML='';
+  rewards.forEach((r,i)=>{const box=document.createElement('div');box.className='editrow';const row=document.createElement('div');row.className='row';
+const up=document.createElement('button');up.type='button';up.className='btn';up.textContent='⬆️';up.title='Move up';up.disabled=i===0;
+const down=document.createElement('button');down.type='button';down.className='btn';down.textContent='⬇️';down.title='Move down';down.disabled=i===rewards.length-1;
+const emo=input(r[0],{maxWidth:'68px'});const name=input(r[1]);const cost=input(r[2],{type:'number',min:0,maxWidth:'78px'});const del=document.createElement('button');del.type='button';del.className='btn danger';del.textContent='×';
+up.addEventListener('click',()=>{if(i>0){[rewards[i-1],rewards[i]]=[rewards[i],rewards[i-1]];persist();showParent()}});
+down.addEventListener('click',()=>{if(i<rewards.length-1){[rewards[i+1],rewards[i]]=[rewards[i],rewards[i+1]];persist();showParent()}});
+emo.addEventListener('change',()=>{rewards[i][0]=emo.value||'🎁';persist()});name.addEventListener('change',()=>{rewards[i][1]=name.value||'New reward';persist()});cost.addEventListener('change',()=>{rewards[i][2]=Math.max(0,Number(cost.value)||0);persist()});del.addEventListener('click',()=>{rewards.splice(i,1);persist()});
+row.append(up,down,emo,name,cost,del);box.appendChild(row);re.appendChild(box)});
+}
+
+function showChild(){ $('childView').classList.remove('hidden');$('parentView').classList.add('hidden');$('childTab').classList.add('active');$('parentTab').classList.remove('active') }
+function showParent(){ $('childView').classList.add('hidden');$('parentView').classList.remove('hidden');$('childTab').classList.remove('active');$('parentTab').classList.add('active');renderEditors() }
+
+$('childTab').addEventListener('click',showChild);
+$('parentTab').addEventListener('click',showParent);
+$('childName').addEventListener('input',e=>{childName=e.target.value;storageSet('kpName4',childName);$('title').textContent=childName?'🌟 '+childName:'🌟 Kids Points'});
+$('addActivityBtn').addEventListener('click',()=>{activities.push(['⭐','New activity',1]);persist();showParent()});
+$('addRewardBtn').addEventListener('click',()=>{rewards.push(['🎁','New reward',20]);persist();showParent()});
+document.querySelectorAll('[data-points]').forEach(b=>b.addEventListener('click',()=>addPoints(Number(b.dataset.points)||0)));
+$('resetBtn').addEventListener('click',()=>{if(confirm('Reset all points?')){points=0;persist();say('Points reset.')}});
+
+render();
+})();
+</script>
+</body></html>
