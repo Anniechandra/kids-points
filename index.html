@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points</title>
+<title>Kids Points Cloud Sync</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -111,7 +111,7 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
       </div>
 
       <h3>☁️ Cloud sync</h3>
-      <div class="small">Use one Firebase account on both your phone and computer. Then points, activities, rewards and history will stay in sync.</div>
+      <div class="small">Use the same Firebase parent login on iPhone, Android and computer. Then points, activities, rewards and history stay in sync automatically.</div>
 
       <div id="firebaseSetup">
         <label>Firebase API key</label><input id="fbApiKey" placeholder="AIza...">
@@ -188,7 +188,7 @@ function saveLocal(){
 async function pushCloud(){
   if(!firebaseReady || !currentUser || !db) return;
   const {doc,setDoc,serverTimestamp}=window.__fb;
-  await setDoc(doc(db,"kidsPoints",currentUser.uid),{
+  await setDoc(doc(db,"users",currentUser.uid,"kidsPoints","main"),{
     ...state,
     updatedAt:serverTimestamp()
   },{merge:true});
@@ -381,7 +381,7 @@ async function initFirebase(){
       $("syncBadge").textContent="☁️ Connected";
       $("syncText").textContent=user.email||"Signed in";
 
-      const ref=fsMod.doc(db,"kidsPoints",user.uid);
+      const ref=fsMod.doc(db,"users",user.uid,"kidsPoints","main");
       const snap=await fsMod.getDoc(ref);
       if(snap.exists()){
         const cloud=snap.data();
