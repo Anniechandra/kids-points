@@ -6,64 +6,67 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Cloud Sync V15</title>
+<title>Kids Points Family V17</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
-.app{max-width:760px;margin:auto;padding:22px 16px 46px}
-h1{margin:0;text-align:center;font-size:36px}
-.sub{text-align:center;color:#8a8492;margin:6px 0 18px}
+.app{max-width:780px;margin:auto;padding:20px 16px 48px}
+h1{margin:0;text-align:center;font-size:34px}
+.sub{text-align:center;color:#8a8492;margin:6px 0 12px}
 .score{background:#743cff;color:#fff;border-radius:26px;padding:22px;text-align:center;box-shadow:0 10px 28px #5f3cb733}
-.score b{font-size:58px;display:block;line-height:1}
-.today{margin:12px 0 18px;background:#edf8ef;border-radius:18px;padding:13px;text-align:center}
-.today b{font-size:26px;color:#168a45}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#ebe8f1;padding:6px;border-radius:18px;margin:18px 0}
+.score b{font-size:56px;display:block;line-height:1}
+.today{margin:12px 0 16px;background:#edf8ef;border-radius:18px;padding:12px;text-align:center}
+.today b{font-size:25px;color:#168a45}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#ebe8f1;padding:6px;border-radius:18px;margin:16px 0}
 .tab{border:0;background:transparent;padding:13px;border-radius:14px;font-weight:800;font-size:16px}
 .tab.active{background:#fff;color:#6f3cff;box-shadow:0 2px 8px #00000012}
 .section{font-size:22px;margin:20px 2px 10px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .card{border:0;background:#fff;border-radius:20px;padding:15px 10px;min-height:112px;box-shadow:0 3px 12px #00000012;text-align:center}
 .card:active{transform:scale(.98)}
-.emoji{font-size:38px}
-.name{font-weight:800;margin-top:7px}
-.gain{font-weight:900;color:#168a45;margin-top:4px}
+.emoji{font-size:38px}.name{font-weight:800;margin-top:7px}.gain{font-weight:900;color:#168a45;margin-top:4px}
 .reward{width:100%;border:0;background:#fff;border-radius:18px;padding:15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 3px 12px #0000000d}
 .cost{font-weight:900;color:#6f3cff;white-space:nowrap}
 .history,.detail,.panel{background:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 3px 12px #00000010}
 .history-row,.detail-row{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid #eee}
 .history-row:last-child,.detail-row:last-child{border-bottom:0}
-.history-date,.detail-name{font-weight:800}
-.history-points,.detail-points{font-weight:900;color:#168a45}
-.empty{color:#999}
-.small{font-size:13px;color:#8f8997}
+.history-date,.detail-name{font-weight:800}.history-points,.detail-points{font-weight:900;color:#168a45}
+.empty{color:#999}.small{font-size:13px;color:#8f8997}
 label{display:block;font-weight:800;margin:12px 0 6px}
-input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;font:inherit;background:#fff}
+input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;font:inherit;background:#fff}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 .row input[type="number"]{max-width:84px}
 .btn{border:0;border-radius:12px;padding:10px 12px;font-weight:800}
-.primary{background:#713cff;color:#fff}
-.secondary{background:#eeeaf7;color:#4c3a72}
-.danger{background:#ffe8e8;color:#b32020}
+.primary{background:#713cff;color:#fff}.secondary{background:#eeeaf7;color:#4c3a72}.danger{background:#ffe8e8;color:#b32020}
 .move{min-width:46px;font-size:18px;background:#eef1ff}
-.wide{width:100%}
-.hidden{display:none!important}
+.wide{width:100%}.hidden{display:none!important}
 .notice{background:#fff4cc;border:1px solid #eed57f;border-radius:14px;padding:10px 12px;margin:10px 0}
 .ok{background:#eaf8ee;border:1px solid #9bd4aa;border-radius:14px;padding:10px 12px;margin:10px 0}
-.syncbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.syncbar{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:8px 0 12px}
 .badge{padding:6px 10px;border-radius:999px;font-size:13px;font-weight:800;background:#ece8f7}
+.child-switcher{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;margin-bottom:8px}
+.child-pill{border:0;border-radius:999px;padding:9px 13px;background:#ece8f7;font-weight:800;white-space:nowrap}
+.child-pill.active{background:#713cff;color:#fff}
+.family-card{background:#f5f2fb;border-radius:16px;padding:12px;margin:10px 0}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;font-weight:900;letter-spacing:2px;background:#fff;border:1px dashed #b8add4;border-radius:12px;padding:10px;text-align:center}
+.child-admin{border:1px solid #eee7f7;border-radius:14px;padding:10px;margin:8px 0}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:8px}
 @media(min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 </head>
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Little achievements, big smiles · Cloud Sync V15</div>
+  <div class="sub">Family & Multiple Children · Cloud Sync V17</div>
 
-  <div class="score"><b id="points">0</b>⭐ Home points</div>
-  <div class="today">Today earned: <b id="todayEarned">0</b> ⭐</div>
+  <div id="signedInArea">
+    <div id="childSwitcher" class="child-switcher hidden"></div>
+    <div class="score"><b id="points">0</b>⭐ Home points</div>
+    <div class="today">Today earned: <b id="todayEarned">0</b> ⭐</div>
+  </div>
 
   <div class="syncbar">
-    <span id="syncBadge" class="badge">☁️ Local only</span>
+    <span id="syncBadge" class="badge">☁️ Connecting…</span>
     <span id="syncText" class="small"></span>
   </div>
 
@@ -73,52 +76,30 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
   </div>
 
   <section id="activityView">
-    <h2 class="section">Today's Activities</h2>
-    <div class="grid" id="activities"></div>
+    <div id="noChildMessage" class="notice hidden">Please sign in and create or join a family first.</div>
 
-    <h2 class="section">🎁 Rewards</h2>
-    <div id="rewards"></div>
+    <div id="childContent">
+      <h2 class="section">Today's Activities</h2>
+      <div class="grid" id="activities"></div>
 
-    <h2 class="section">📅 Daily Points</h2>
-    <div class="history" id="dailyHistory"></div>
+      <h2 class="section">🎁 Rewards</h2>
+      <div id="rewards"></div>
 
-    <h2 class="section">🧾 What was earned today</h2>
-    <div class="detail" id="todayDetails"></div>
+      <h2 class="section">📅 Daily Points</h2>
+      <div class="history" id="dailyHistory"></div>
+
+      <h2 class="section">🧾 What was earned today</h2>
+      <div class="detail" id="todayDetails"></div>
+    </div>
   </section>
 
   <section id="parentView" class="hidden">
     <div class="panel">
       <h2 style="margin-top:0">👩 Parent Mode</h2>
 
-      <label>Child's name</label>
-      <input id="childName">
-
-      <h3>Activities</h3>
-      <div class="small">Use ⬆️ and ⬇️ to change the display order.</div>
-      <div id="activityEditor"></div>
-      <button class="btn secondary wide" id="addActivity">➕ Add activity</button>
-
-      <h3>Rewards</h3>
-      <div class="small">Use ⬆️ and ⬇️ to change the display order.</div>
-      <div id="rewardEditor"></div>
-      <button class="btn secondary wide" id="addReward">➕ Add reward</button>
-
-      <h3>Manual points</h3>
-      <div class="row">
-        <input id="manualPoints" type="number" value="1" style="max-width:100px">
-        <button class="btn primary" id="addManual">+ Add</button>
-        <button class="btn danger" id="subManual">− Subtract</button>
-      </div>
-      <button class="btn danger wide" id="resetPointsBtn" style="margin-top:8px">🔄 Reset points to 0</button>
-
-      <h3>☁️ Cloud sync</h3>
-      <div class="small">Use one Firebase account on both your phone and computer. Then points, activities, rewards and history will stay in sync.</div>
-
-      <div id="firebaseSetup" class="ok">
-        ✅ Firebase is built into this version. No API key entry is needed.
-      </div>
-
-      <div id="loginBox" class="hidden">
+      <div id="authArea">
+        <h3>☁️ Parent sign in</h3>
+        <div class="ok">✅ Firebase is built into this version.</div>
         <label>Email</label><input id="loginEmail" type="email" autocomplete="email">
         <label>Password</label><input id="loginPassword" type="password" autocomplete="current-password">
         <div class="row">
@@ -127,16 +108,70 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
           <button class="btn secondary" id="forgotPasswordBtn">Forgot password?</button>
           <button class="btn danger hidden" id="signOutBtn">Sign out</button>
         </div>
-        <div id="resetBox" class="hidden" style="margin-top:10px">
+        <div id="resetBox" class="hidden">
           <label>Reset email</label>
-          <input id="resetEmail" type="email" autocomplete="email" placeholder="Enter your parent email">
-          <div class="row" style="margin-top:8px">
-          <button class="btn secondary" id="copyLoginEmailBtn">Use sign-in email</button>
-          <button class="btn primary" id="sendResetBtn">Send reset email</button>
+          <input id="resetEmail" type="email">
+          <div class="row">
+            <button class="btn secondary" id="copyLoginEmailBtn">Use sign-in email</button>
+            <button class="btn primary" id="sendResetBtn">Send reset email</button>
+          </div>
         </div>
+        <div id="authMessage" class="notice hidden"></div>
+      </div>
+
+      <div id="familySetup" class="hidden">
+        <h3>👨‍👩‍👧‍👦 Family setup</h3>
+        <div class="small">Create a new family, or join an existing family using its family code.</div>
+        <label>Family name</label>
+        <input id="newFamilyName" placeholder="e.g. Chandra Family">
+        <button class="btn primary wide" id="createFamilyBtn" style="margin-top:8px">Create family</button>
+
+        <div style="height:10px"></div>
+        <label>Family code</label>
+        <input id="joinFamilyCode" placeholder="e.g. A7K2M9QX" maxlength="12">
+        <button class="btn secondary wide" id="joinFamilyBtn" style="margin-top:8px">Join family</button>
+        <div id="familyMessage" class="notice hidden"></div>
+      </div>
+
+      <div id="familyAdmin" class="hidden">
+        <h3>👨‍👩‍👧‍👦 Family</h3>
+        <div class="family-card">
+          <div><b id="familyNameLabel">Family</b></div>
+          <div class="small">Share this code with another parent so they can join:</div>
+          <div id="familyCodeLabel" class="code">--------</div>
+          <button class="btn secondary wide" id="copyFamilyCodeBtn" style="margin-top:8px">Copy family code</button>
         </div>
-        <div id="authMessage" class="notice hidden" style="margin-top:10px"></div>
-        <div class="small" style="margin-top:8px">Use the same parent email/password on iPhone, Android and computer.</div>
+
+        <h3>Children</h3>
+        <div id="childrenAdmin"></div>
+        <button class="btn secondary wide" id="addChildBtn">➕ Add child</button>
+      </div>
+
+      <div id="childEditorBlock" class="hidden">
+        <h3>Current child</h3>
+        <label>Child's name</label>
+        <input id="childName">
+
+        <h3>Activities</h3>
+        <div class="small">Use ⬆️ and ⬇️ to change the display order.</div>
+        <div id="activityEditor"></div>
+        <button class="btn secondary wide" id="addActivity">➕ Add activity</button>
+
+        <h3>Rewards</h3>
+        <div class="small">Use ⬆️ and ⬇️ to change the display order.</div>
+        <div id="rewardEditor"></div>
+        <button class="btn secondary wide" id="addReward">➕ Add reward</button>
+
+        <h3>Manual points</h3>
+        <div class="row">
+          <input id="manualPoints" type="number" value="1" style="max-width:100px">
+          <button class="btn primary" id="addManual">+ Add</button>
+          <button class="btn danger" id="subManual">− Subtract</button>
+        </div>
+        <button class="btn danger wide" id="resetPointsBtn" style="margin-top:10px;font-size:17px;padding:14px">
+          🔄 Reset current points to 0
+        </button>
+        <div class="small" style="margin-top:6px">This keeps activities, rewards and daily history.</div>
       </div>
 
       <div id="storageNotice" class="notice hidden">This browser is not allowing local storage. Use the GitHub Pages website rather than opening the HTML file directly.</div>
@@ -145,178 +180,185 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
 </div>
 
 <script type="module">
-const $ = id => document.getElementById(id);
+const $=id=>document.getElementById(id);
 
-const DEFAULT_ACTIVITIES = [
-  ["🎹","Piano & Theory",1],["🧮","Math IXL & notebook 2",1],["📚","Reading",1],["🥁","Drum Practice",1],
-  ["⭐","Gita Practice",1],["⛳","Golf Class",1],["😊","Get up Happily Ready for School",1],["😴","Go to Bed B4 7:40pm",1],
-  ["💃","Dance Class",1],["🥋","Taekwondo Class",1],["🏊","Swimming Class",1],["🎤","Singing Class",1],
-  ["🎹","Piano Class",1],["🧹","Tidy up Chores",1],["🥗","Eat Healthy Food",1],["🎓","Homework",1],
-  ["📣","Speech Class",1],["📣","Speech Practice",1],["🚗","Easy Drop off",1],["🚙","Easy Pick up",1]
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyDCWK7B-90Wg5x8iQqqeX3eUiu4WPdO9Yo",
+  authDomain:"kids-points-f328c.firebaseapp.com",
+  projectId:"kids-points-f328c",
+  appId:"1:239937856623:web:d5702e442fa009e462999a"
+};
+
+const DEFAULT_ACTIVITIES=[
+["🎹","Piano & Theory",1],["🧮","Math IXL & notebook 2",1],["📚","Reading",1],["🥁","Drum Practice",1],
+["⭐","Gita Practice",1],["⛳","Golf Class",1],["😊","Get up Happily Ready for School",1],["😴","Go to Bed B4 7:40pm",1],
+["💃","Dance Class",1],["🥋","Taekwondo Class",1],["🏊","Swimming Class",1],["🎤","Singing Class",1],
+["🎹","Piano Class",1],["🧹","Tidy up Chores",1],["🥗","Eat Healthy Food",1],["🎓","Homework",1],
+["📣","Speech Class",1],["📣","Speech Practice",1],["🚗","Easy Drop off",1],["🚙","Easy Pick up",1]
 ];
-const DEFAULT_REWARDS = [
-  ["🍦","Choose a dessert",20],["📱","30 minutes iPad",30],["🎬","Choose a family movie",50],
-  ["🍕","Choose dinner",60],["🎁","Small toy or book",100],["🎢","Special outing",200]
+const DEFAULT_REWARDS=[
+["🍦","Choose a dessert",20],["📱","30 minutes iPad",30],["🎬","Choose a family movie",50],
+["🍕","Choose dinner",60],["🎁","Small toy or book",100],["🎢","Special outing",200]
 ];
 
-function safeParse(v, fallback){
-  if(v === null || v === undefined || v === "") return fallback;
-  try{
-    const parsed=JSON.parse(v);
-    return parsed === null ? fallback : parsed;
-  }catch{return fallback}
-}
-function storageGet(k){ try{return localStorage.getItem(k)}catch{return null} }
-function storageSet(k,v){ try{localStorage.setItem(k,v);return true}catch{return false} }
-function firstStored(...keys){
-  for(const k of keys){
-    const v=storageGet(k);
-    if(v !== null && v !== undefined && v !== "") return v;
-  }
-  return null;
-}
 function dateKey(d=new Date()){
-  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
   return `${y}-${m}-${day}`;
 }
-
-// Recover data from earlier versions whenever it is still present in this browser.
-let state = {
-  childName: firstStored("kpName12","kpName10","kpName4") || "Aliyah",
-  points: Math.max(0,Number(firstStored("kpPts12","kpPts10","kpPts4") || 0)||0),
-  activities: safeParse(firstStored("kpA12","kpA10","kpA4"), DEFAULT_ACTIVITIES.map(x=>x.slice())),
-  rewards: safeParse(firstStored("kpR12","kpR10","kpR4"), DEFAULT_REWARDS.map(x=>x.slice())),
-  dailyEarned: safeParse(firstStored("kpDaily12","kpDaily10","kpDaily5"), {}),
-  dailyDetails: safeParse(firstStored("kpDetails12","kpDetails10","kpDailyDetails9"), {})
-};
-if(!Array.isArray(state.activities)) state.activities=DEFAULT_ACTIVITIES.map(x=>x.slice());
-if(!Array.isArray(state.rewards)) state.rewards=DEFAULT_REWARDS.map(x=>x.slice());
-if(!state.dailyEarned || typeof state.dailyEarned!=="object") state.dailyEarned={};
-if(!state.dailyDetails || typeof state.dailyDetails!=="object") state.dailyDetails={};
-
-let firebaseReady=false, auth=null, db=null, currentUser=null, unsub=null;
-
-// Your Firebase web configuration. These values are public identifiers used by Firebase web apps.
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDCWK7B-90Wg5x8iQqqeX3eUiu4WPdO9Yo",
-  authDomain: "kids-points-f328c.firebaseapp.com",
-  projectId: "kids-points-f328c",
-  appId: "1:239937856623:web:d5702e442fa009e462999a"
-};
-
-function saveLocal(){
-  const pairs=[
-    ["kpName12",state.childName],["kpPts12",String(state.points)],
-    ["kpA12",JSON.stringify(state.activities)],["kpR12",JSON.stringify(state.rewards)],
-    ["kpDaily12",JSON.stringify(state.dailyEarned)],["kpDetails12",JSON.stringify(state.dailyDetails)],
-    // Backup in the older keys too, so returning to V8/V9 does not look empty.
-    ["kpName4",state.childName],["kpPts4",String(state.points)],
-    ["kpA4",JSON.stringify(state.activities)],["kpR4",JSON.stringify(state.rewards)],
-    ["kpDaily5",JSON.stringify(state.dailyEarned)],["kpDailyDetails9",JSON.stringify(state.dailyDetails)]
-  ];
-  const ok=pairs.map(([k,v])=>storageSet(k,v)).every(Boolean);
-  $("storageNotice").classList.toggle("hidden",ok);
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function storageGet(k){try{return localStorage.getItem(k)}catch{return null}}
+function storageSet(k,v){try{localStorage.setItem(k,v);return true}catch{return false}}
+function parse(v,f){try{return v?JSON.parse(v):f}catch{return f}}
+function cloneDefaults(){
+  return {
+    childName:storageGet("kpName12")||storageGet("kpName4")||"Aliyah",
+    points:Number(storageGet("kpPts12")||storageGet("kpPts4")||0)||0,
+    activities:parse(storageGet("kpA12")||storageGet("kpA4"),DEFAULT_ACTIVITIES.map(x=>x.slice())),
+    rewards:parse(storageGet("kpR12")||storageGet("kpR4"),DEFAULT_REWARDS.map(x=>x.slice())),
+    dailyEarned:parse(storageGet("kpDaily12")||storageGet("kpDaily5"),{}),
+    dailyDetails:parse(storageGet("kpDetails12")||storageGet("kpDailyDetails9"),{})
+  };
 }
 
-async function pushCloud(){
-  if(!firebaseReady || !currentUser || !db) return;
+let auth=null,db=null,currentUser=null,currentFamilyId=null,currentFamily=null;
+let children=[],activeChildId=null,state=cloneDefaults();
+let unsubFamily=null,unsubChildren=null;
+let firebaseReady=false;
+
+function showMsg(id,msg,ok=false){
+  const el=$(id); el.textContent=msg; el.classList.remove("hidden","notice","ok"); el.classList.add(ok?"ok":"notice");
+}
+function hideMsg(id){$(id).classList.add("hidden")}
+function validEmail(email){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
+function randomCode(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s=""; for(let i=0;i<8;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+function saveActiveLocal(){
+  if(!activeChildId)return;
+  storageSet("kpActiveChild17",activeChildId);
+  storageSet("kpName12",state.childName);
+  storageSet("kpPts12",String(state.points));
+  storageSet("kpA12",JSON.stringify(state.activities));
+  storageSet("kpR12",JSON.stringify(state.rewards));
+  storageSet("kpDaily12",JSON.stringify(state.dailyEarned));
+  storageSet("kpDetails12",JSON.stringify(state.dailyDetails));
+}
+
+async function saveChild(){
+  saveActiveLocal();
+  render();
+  if(!firebaseReady||!currentUser||!currentFamilyId||!activeChildId)return;
   const {doc,setDoc,serverTimestamp}=window.__fb;
-  await setDoc(doc(db,"users",currentUser.uid,"kidsPoints","main"),{
-    ...state,
-    updatedAt:serverTimestamp()
-  },{merge:true});
-  $("syncBadge").textContent="☁️ Synced";
-  $("syncText").textContent="Saved online";
+  try{
+    await setDoc(doc(db,"families",currentFamilyId,"children",activeChildId),{
+      childName:state.childName,
+      points:Number(state.points)||0,
+      activities:state.activities,
+      rewards:state.rewards,
+      dailyEarned:state.dailyEarned,
+      dailyDetails:state.dailyDetails,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    $("syncBadge").textContent="☁️ Synced";
+    $("syncText").textContent=currentUser.email||"Connected";
+  }catch(e){
+    $("syncBadge").textContent="⚠️ Sync error";
+    $("syncText").textContent=e.message;
+  }
 }
 
 function persist(){
-  saveLocal();
-  render();
-  clearTimeout(window.__syncTimer);
-  window.__syncTimer=setTimeout(()=>pushCloud().catch(e=>{$("syncText").textContent=e.message}),400);
+  clearTimeout(window.__saveTimer);
+  saveActiveLocal(); render();
+  window.__saveTimer=setTimeout(saveChild,300);
 }
 
 function addPoints(n,label){
   n=Number(n)||0;
-  state.points=Math.max(0,state.points+n);
+  state.points=Math.max(0,(Number(state.points)||0)+n);
   if(n>0){
-    const key=dateKey();
-    state.dailyEarned[key]=(Number(state.dailyEarned[key])||0)+n;
-    if(!Array.isArray(state.dailyDetails[key])) state.dailyDetails[key]=[];
-    state.dailyDetails[key].push({label:label||"Manual points",pts:n,time:new Date().toISOString()});
+    const k=dateKey();
+    state.dailyEarned[k]=(Number(state.dailyEarned[k])||0)+n;
+    if(!Array.isArray(state.dailyDetails[k]))state.dailyDetails[k]=[];
+    state.dailyDetails[k].push({label:label||"Manual points",pts:n,time:new Date().toISOString()});
   }
   persist();
 }
 
-function redeemReward(i){
-  const r=state.rewards[i], cost=Number(r[2])||0;
-  if(state.points<cost){ alert(`You need ${cost-state.points} more points for ${r[1]}.`); return; }
-  if(confirm(`Redeem "${r[1]}" for ${cost} points?`)){
-    state.points-=cost;
-    persist();
-  }
+function redeem(i){
+  const r=state.rewards[i],cost=Number(r[2])||0;
+  if(state.points<cost){alert(`You need ${cost-state.points} more points for ${r[1]}.`);return}
+  if(confirm(`Redeem "${r[1]}" for ${cost} points?`)){state.points-=cost;persist()}
 }
-
-function move(list,i,d){
-  const j=i+d;
-  if(j<0 || j>=list.length)return;
-  [list[i],list[j]]=[list[j],list[i]];
-  persist();
-}
+function move(list,i,d){const j=i+d;if(j<0||j>=list.length)return;[list[i],list[j]]=[list[j],list[i]];persist()}
 
 function render(){
-  $("title").textContent=`🌟 ${state.childName || "Kids"}${state.childName ? "'s Points" : " Points"}`;
-  $("points").textContent=state.points;
+  const haveChild=!!activeChildId;
+  $("childContent").classList.toggle("hidden",!haveChild);
+  $("noChildMessage").classList.toggle("hidden",haveChild);
+  $("childEditorBlock").classList.toggle("hidden",!haveChild);
+  $("childSwitcher").classList.toggle("hidden",children.length<2);
+
+  if(!haveChild){
+    $("title").textContent="🌟 Kids Points";
+    $("points").textContent="0"; $("todayEarned").textContent="0";
+    renderChildrenUI(); return;
+  }
+
+  $("title").textContent=`🌟 ${state.childName}'s Points`;
+  $("points").textContent=Number(state.points)||0;
+  $("todayEarned").textContent=Number(state.dailyEarned[dateKey()]||0);
   $("childName").value=state.childName;
 
-  const today=dateKey();
-  $("todayEarned").textContent=Number(state.dailyEarned[today]||0);
-
-  const ag=$("activities"); ag.innerHTML="";
+  const ag=$("activities");ag.innerHTML="";
   state.activities.forEach((a,i)=>{
-    const b=document.createElement("button"); b.className="card";
-    b.innerHTML=`<div class="emoji">${a[0]}</div><div class="name">${escapeHtml(a[1])}</div><div class="gain">+${Number(a[2])||0} ⭐</div>`;
-    b.onclick=()=>addPoints(a[2],a[1]);
-    ag.appendChild(b);
+    const b=document.createElement("button");b.className="card";
+    b.innerHTML=`<div class="emoji">${a[0]}</div><div class="name">${esc(a[1])}</div><div class="gain">+${Number(a[2])||0} ⭐</div>`;
+    b.onclick=()=>addPoints(a[2],a[1]);ag.appendChild(b);
   });
 
-  const rw=$("rewards"); rw.innerHTML="";
+  const rw=$("rewards");rw.innerHTML="";
   state.rewards.forEach((r,i)=>{
-    const b=document.createElement("button"); b.className="reward";
-    b.innerHTML=`<span><b>${r[0]} ${escapeHtml(r[1])}</b></span><span class="cost">${Number(r[2])||0} ⭐</span>`;
-    b.onclick=()=>redeemReward(i);
-    rw.appendChild(b);
+    const b=document.createElement("button");b.className="reward";
+    b.innerHTML=`<span><b>${r[0]} ${esc(r[1])}</b></span><span class="cost">${Number(r[2])||0} ⭐</span>`;
+    b.onclick=()=>redeem(i);rw.appendChild(b);
   });
 
-  const hist=$("dailyHistory"); hist.innerHTML="";
+  const hist=$("dailyHistory");hist.innerHTML="";
   for(let i=0;i<7;i++){
-    const d=new Date(); d.setDate(d.getDate()-i); const k=dateKey(d);
-    const row=document.createElement("div"); row.className="history-row";
-    const label=i===0?"Today":i===1?"Yesterday":d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
-    row.innerHTML=`<span class="history-date">${label}</span><span class="history-points">${Number(state.dailyEarned[k]||0)} ⭐</span>`;
+    const d=new Date();d.setDate(d.getDate()-i);const k=dateKey(d);
+    const row=document.createElement("div");row.className="history-row";
+    const lab=i===0?"Today":i===1?"Yesterday":d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+    row.innerHTML=`<span class="history-date">${lab}</span><span class="history-points">${Number(state.dailyEarned[k]||0)} ⭐</span>`;
     hist.appendChild(row);
   }
 
-  const det=$("todayDetails"); det.innerHTML="";
-  const entries=Array.isArray(state.dailyDetails[today])?state.dailyDetails[today]:[];
+  const det=$("todayDetails");det.innerHTML="";
+  const entries=Array.isArray(state.dailyDetails[dateKey()])?state.dailyDetails[dateKey()]:[];
   if(!entries.length){det.innerHTML='<div class="empty">No points earned yet today.</div>'}
   else{
-    const grouped={};
-    entries.forEach(e=>grouped[e.label]=(grouped[e.label]||0)+(Number(e.pts)||0));
-    Object.entries(grouped).forEach(([name,pts])=>{
-      const row=document.createElement("div"); row.className="detail-row";
-      row.innerHTML=`<span class="detail-name">${escapeHtml(name)}</span><span class="detail-points">+${pts} ⭐</span>`;
+    const g={}; entries.forEach(e=>g[e.label]=(g[e.label]||0)+(Number(e.pts)||0));
+    Object.entries(g).forEach(([name,pts])=>{
+      const row=document.createElement("div");row.className="detail-row";
+      row.innerHTML=`<span class="detail-name">${esc(name)}</span><span class="detail-points">+${pts} ⭐</span>`;
       det.appendChild(row);
     });
   }
 
-  renderEditors();
+  renderEditors(); renderChildrenUI();
 }
 
+function makeButton(txt,cls,fn,disabled=false){const b=document.createElement("button");b.type="button";b.className="btn "+cls;b.textContent=txt;b.onclick=fn;b.disabled=disabled;return b}
+function makeInput(value,onchange,opts={}){const i=document.createElement("input");i.value=value;i.type=opts.type||"text";if(opts.style)i.style.cssText=opts.style;i.onchange=e=>onchange(e.target.value);return i}
+
 function renderEditors(){
-  const ae=$("activityEditor"); ae.innerHTML="";
+  if(!activeChildId)return;
+  const ae=$("activityEditor");ae.innerHTML="";
   state.activities.forEach((a,i)=>{
-    const row=document.createElement("div"); row.className="row";
+    const row=document.createElement("div");row.className="row";
     row.append(
       makeButton("⬆️","move",()=>move(state.activities,i,-1),i===0),
       makeButton("⬇️","move",()=>move(state.activities,i,1),i===state.activities.length-1),
@@ -328,9 +370,9 @@ function renderEditors(){
     ae.appendChild(row);
   });
 
-  const re=$("rewardEditor"); re.innerHTML="";
+  const re=$("rewardEditor");re.innerHTML="";
   state.rewards.forEach((r,i)=>{
-    const row=document.createElement("div"); row.className="row";
+    const row=document.createElement("div");row.className="row";
     row.append(
       makeButton("⬆️","move",()=>move(state.rewards,i,-1),i===0),
       makeButton("⬇️","move",()=>move(state.rewards,i,1),i===state.rewards.length-1),
@@ -338,218 +380,240 @@ function renderEditors(){
       makeInput(r[1],v=>{state.rewards[i][1]=v||"Reward";persist()}),
       makeInput(r[2],v=>{state.rewards[i][2]=Math.max(0,Number(v)||0);persist()},{type:"number",style:"max-width:84px"}),
       makeButton("×","danger",()=>{state.rewards.splice(i,1);persist()})
-    );
-    re.appendChild(row);
+    );re.appendChild(row);
   });
 }
 
-function makeButton(txt,cls,fn,disabled=false){
-  const b=document.createElement("button");b.type="button";b.className="btn "+cls;b.textContent=txt;b.onclick=fn;b.disabled=disabled;return b
-}
-function makeInput(value,onchange,opts={}){
-  const i=document.createElement("input");i.value=value;i.type=opts.type||"text";if(opts.style)i.style.cssText=opts.style;i.onchange=e=>onchange(e.target.value);return i
-}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderChildrenUI(){
+  const sw=$("childSwitcher");sw.innerHTML="";
+  children.forEach(c=>{
+    const b=document.createElement("button");b.className="child-pill"+(c.id===activeChildId?" active":"");
+    b.textContent=`${c.childName||"Child"} · ${Number(c.points)||0}⭐`;
+    b.onclick=()=>selectChild(c.id);sw.appendChild(b);
+  });
 
-$("activitiesTab").onclick=()=>{
-  $("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");
-  $("activitiesTab").classList.add("active");$("parentTab").classList.remove("active");
-};
-$("parentTab").onclick=()=>{
-  $("parentView").classList.remove("hidden");$("activityView").classList.add("hidden");
-  $("parentTab").classList.add("active");$("activitiesTab").classList.remove("active");
-};
+  const ca=$("childrenAdmin");ca.innerHTML="";
+  children.forEach(c=>{
+    const box=document.createElement("div");box.className="child-admin";
+    const top=document.createElement("div");top.className="topline";
+    const left=document.createElement("b");left.textContent=`${c.childName||"Child"} · ${Number(c.points)||0} ⭐`;
+    const choose=makeButton(c.id===activeChildId?"Selected":"Open","secondary",()=>selectChild(c.id));
+    top.append(left,choose);box.appendChild(top);
 
-$("childName").onchange=e=>{state.childName=e.target.value.trim()||"Kids";persist()};
-$("addActivity").onclick=()=>{state.activities.push(["⭐","New activity",1]);persist()};
-$("addReward").onclick=()=>{state.rewards.push(["🎁","New reward",20]);persist()};
-$("addManual").onclick=()=>addPoints(Number($("manualPoints").value)||0,"Manual points");
-$("subManual").onclick=()=>{state.points=Math.max(0,state.points-(Number($("manualPoints").value)||0));persist()};
+    const row=document.createElement("div");row.className="row";
+    row.append(
+      makeButton("Rename","secondary",()=>renameChild(c.id,c.childName)),
+      makeButton("Delete","danger",()=>deleteChild(c.id,c.childName))
+    );
+    box.appendChild(row);ca.appendChild(box);
+  });
+}
+
+function selectChild(id){
+  const c=children.find(x=>x.id===id);if(!c)return;
+  activeChildId=id;
+  state={
+    childName:c.childName||"Child",points:Number(c.points)||0,
+    activities:Array.isArray(c.activities)?c.activities:DEFAULT_ACTIVITIES.map(x=>x.slice()),
+    rewards:Array.isArray(c.rewards)?c.rewards:DEFAULT_REWARDS.map(x=>x.slice()),
+    dailyEarned:c.dailyEarned||{},dailyDetails:c.dailyDetails||{}
+  };
+  storageSet("kpActiveChild17",id);render();
+}
+
+async function renameChild(id,oldName){
+  const name=prompt("New child name:",oldName||"Child");if(!name)return;
+  const {doc,setDoc}=window.__fb;
+  await setDoc(doc(db,"families",currentFamilyId,"children",id),{childName:name.trim()||"Child"},{merge:true});
+}
+async function deleteChild(id,name){
+  if(children.length<=1){alert("A family must keep at least one child. Add another child first.");return}
+  if(!confirm(`Delete ${name||"this child"} and all of their points/history?`))return;
+  const {doc,deleteDoc}=window.__fb;
+  await deleteDoc(doc(db,"families",currentFamilyId,"children",id));
+  if(activeChildId===id){activeChildId=null}
+}
+
+async function addChild(){
+  if(!currentFamilyId)return;
+  const name=prompt("Child's name:","New Child");if(!name)return;
+  const {collection,doc,setDoc}=window.__fb;
+  const ref=doc(collection(db,"families",currentFamilyId,"children"));
+  await setDoc(ref,{
+    childName:name.trim()||"Child",points:0,
+    activities:DEFAULT_ACTIVITIES.map(x=>x.slice()),
+    rewards:DEFAULT_REWARDS.map(x=>x.slice()),
+    dailyEarned:{},dailyDetails:{}
+  });
+  activeChildId=ref.id;
+}
+
+async function createFamily(){
+  const name=$("newFamilyName").value.trim()||"My Family";
+  const {collection,doc,setDoc,getDoc,serverTimestamp}=window.__fb;
+  const familyRef=doc(collection(db,"families"));
+  const familyId=familyRef.id;
+  let code;
+  for(let tries=0;tries<10;tries++){
+    const candidate=randomCode();
+    const s=await getDoc(doc(db,"invites",candidate));
+    if(!s.exists()){code=candidate;break}
+  }
+  if(!code){showMsg("familyMessage","Could not create a unique family code. Please try again.");return}
+
+  try{
+    await setDoc(familyRef,{name,joinCode:code,createdBy:currentUser.uid,createdAt:serverTimestamp()});
+    await setDoc(doc(db,"invites",code),{familyId,createdBy:currentUser.uid,active:true});
+    await setDoc(doc(db,"families",familyId,"members",currentUser.uid),{
+      email:currentUser.email||"",role:"owner",joinedAt:serverTimestamp()
+    });
+    await setDoc(doc(db,"users",currentUser.uid),{familyId,email:currentUser.email||""},{merge:true});
+
+    const childRef=doc(collection(db,"families",familyId,"children"));
+    const seed=cloneDefaults();
+    await setDoc(childRef,{
+      childName:seed.childName||"Aliyah",points:Number(seed.points)||0,
+      activities:Array.isArray(seed.activities)?seed.activities:DEFAULT_ACTIVITIES.map(x=>x.slice()),
+      rewards:Array.isArray(seed.rewards)?seed.rewards:DEFAULT_REWARDS.map(x=>x.slice()),
+      dailyEarned:seed.dailyEarned||{},dailyDetails:seed.dailyDetails||{}
+    });
+    activeChildId=childRef.id;
+    showMsg("familyMessage","✅ Family created. Your existing child data was used for the first child.",true);
+    await loadUserFamily();
+  }catch(e){showMsg("familyMessage","Could not create family: "+e.message)}
+}
+
+async function joinFamily(){
+  const code=$("joinFamilyCode").value.trim().toUpperCase();
+  if(!code){showMsg("familyMessage","Please enter the family code.");return}
+  const {doc,getDoc,setDoc,serverTimestamp}=window.__fb;
+  try{
+    const inv=await getDoc(doc(db,"invites",code));
+    if(!inv.exists()||inv.data().active!==true){showMsg("familyMessage","That family code was not found or is inactive.");return}
+    const familyId=inv.data().familyId;
+    await setDoc(doc(db,"families",familyId,"members",currentUser.uid),{
+      email:currentUser.email||"",role:"parent",inviteCode:code,joinedAt:serverTimestamp()
+    });
+    await setDoc(doc(db,"users",currentUser.uid),{familyId,email:currentUser.email||""},{merge:true});
+    showMsg("familyMessage","✅ Joined family successfully.",true);
+    await loadUserFamily();
+  }catch(e){showMsg("familyMessage","Could not join family: "+e.message)}
+}
+
+function clearSubs(){if(unsubFamily){unsubFamily();unsubFamily=null}if(unsubChildren){unsubChildren();unsubChildren=null}}
+
+async function loadUserFamily(){
+  clearSubs();
+  if(!currentUser)return;
+  const {doc,getDoc,onSnapshot,collection}=window.__fb;
+  try{
+    const u=await getDoc(doc(db,"users",currentUser.uid));
+    currentFamilyId=u.exists()?u.data().familyId:null;
+
+    $("familySetup").classList.toggle("hidden",!!currentFamilyId);
+    $("familyAdmin").classList.toggle("hidden",!currentFamilyId);
+
+    if(!currentFamilyId){
+      children=[];activeChildId=null;render();
+      $("syncBadge").textContent="☁️ Signed in";
+      $("syncText").textContent="Create or join a family";
+      return;
+    }
+
+    unsubFamily=onSnapshot(doc(db,"families",currentFamilyId),snap=>{
+      if(!snap.exists())return;
+      currentFamily={id:snap.id,...snap.data()};
+      $("familyNameLabel").textContent=currentFamily.name||"Family";
+      $("familyCodeLabel").textContent=currentFamily.joinCode||"--------";
+    });
+
+    unsubChildren=onSnapshot(collection(db,"families",currentFamilyId,"children"),snap=>{
+      children=snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(!children.length){activeChildId=null;render();return}
+      const saved=storageGet("kpActiveChild17");
+      if(!activeChildId||!children.some(c=>c.id===activeChildId)){
+        activeChildId=(saved&&children.some(c=>c.id===saved))?saved:children[0].id;
+      }
+      selectChild(activeChildId);
+      $("syncBadge").textContent="☁️ Synced";
+      $("syncText").textContent=currentUser.email||"Connected";
+    });
+  }catch(e){
+    $("syncBadge").textContent="⚠️ Family load error";$("syncText").textContent=e.message;
+  }
+}
 
 async function initFirebase(){
-  $("syncBadge").textContent="☁️ Connecting…";
-  $("syncText").textContent="Connecting to Firebase.";
   try{
-    const cfg=FIREBASE_CONFIG;
     const appMod=await import("https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js");
     const authMod=await import("https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js");
     const fsMod=await import("https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js");
-    const app=appMod.initializeApp(cfg);
-    auth=authMod.getAuth(app); db=fsMod.getFirestore(app);
-    window.__fb={...authMod,...fsMod};
-    firebaseReady=true;
-    $("loginBox").classList.remove("hidden");
-    $("syncBadge").textContent="☁️ Ready";
-    $("syncText").textContent="Sign in to sync.";
+    const app=appMod.initializeApp(FIREBASE_CONFIG);
+    auth=authMod.getAuth(app);db=fsMod.getFirestore(app);
+    window.__fb={...authMod,...fsMod};firebaseReady=true;
 
-    authMod.onAuthStateChanged(auth, async user=>{
+    authMod.onAuthStateChanged(auth,async user=>{
       currentUser=user;
       $("signOutBtn").classList.toggle("hidden",!user);
       $("signInBtn").classList.toggle("hidden",!!user);
       $("createAccountBtn").classList.toggle("hidden",!!user);
+      $("forgotPasswordBtn").classList.toggle("hidden",!!user);
 
-      if(unsub){unsub();unsub=null}
-      if(!user){$("syncBadge").textContent="☁️ Ready";$("syncText").textContent="Sign in to sync.";return}
-
-      $("syncBadge").textContent="☁️ Connected";
-      $("syncText").textContent=(user.email||"Signed in")+" · syncing";
-
-      const ref=fsMod.doc(db,"users",user.uid,"kidsPoints","main");
-      const snap=await fsMod.getDoc(ref);
-      if(snap.exists()){
-        const cloud=snap.data();
-        state={
-          childName:cloud.childName??state.childName,
-          points:Number(cloud.points??state.points),
-          activities:Array.isArray(cloud.activities)?cloud.activities:state.activities,
-          rewards:Array.isArray(cloud.rewards)?cloud.rewards:state.rewards,
-          dailyEarned:cloud.dailyEarned||state.dailyEarned,
-          dailyDetails:cloud.dailyDetails||state.dailyDetails
-        };
-        saveLocal(); render();
-      }else{
-        await pushCloud();
+      if(!user){
+        clearSubs();currentFamilyId=null;currentFamily=null;children=[];activeChildId=null;
+        $("familySetup").classList.add("hidden");$("familyAdmin").classList.add("hidden");
+        $("syncBadge").textContent="☁️ Ready";$("syncText").textContent="Sign in to sync";
+        render();return;
       }
-
-      unsub=fsMod.onSnapshot(ref,s=>{
-        if(!s.exists())return;
-        const cloud=s.data();
-        state={
-          childName:cloud.childName??state.childName,
-          points:Number(cloud.points??state.points),
-          activities:Array.isArray(cloud.activities)?cloud.activities:state.activities,
-          rewards:Array.isArray(cloud.rewards)?cloud.rewards:state.rewards,
-          dailyEarned:cloud.dailyEarned||state.dailyEarned,
-          dailyDetails:cloud.dailyDetails||state.dailyDetails
-        };
-        saveLocal(); render();
-        $("syncBadge").textContent="☁️ Synced";
-      });
+      $("syncBadge").textContent="☁️ Connected";$("syncText").textContent=user.email||"Signed in";
+      await loadUserFamily();
     });
   }catch(e){
-    console.error(e);
-    $("syncBadge").textContent="⚠️ Cloud connection error";
-    $("syncText").textContent=e && e.message ? e.message : "Could not connect to Firebase.";
-    $("loginBox").classList.remove("hidden");
+    $("syncBadge").textContent="⚠️ Cloud connection error";$("syncText").textContent=e.message;
   }
 }
 
+$("activitiesTab").onclick=()=>{$("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");$("activitiesTab").classList.add("active");$("parentTab").classList.remove("active")}
+$("parentTab").onclick=()=>{$("parentView").classList.remove("hidden");$("activityView").classList.add("hidden");$("parentTab").classList.add("active");$("activitiesTab").classList.remove("active")}
 
-function showAuthMessage(message, ok=false){
-  const box=$("authMessage");
-  box.textContent=message;
-  box.classList.remove("hidden","notice","ok");
-  box.classList.add(ok ? "ok" : "notice");
-}
+$("childName").onchange=e=>{state.childName=e.target.value.trim()||"Child";persist()}
+$("addActivity").onclick=()=>{state.activities.push(["⭐","New activity",1]);persist()}
+$("addReward").onclick=()=>{state.rewards.push(["🎁","New reward",20]);persist()}
+$("addManual").onclick=()=>addPoints(Number($("manualPoints").value)||0,"Manual points")
+$("subManual").onclick=()=>{state.points=Math.max(0,state.points-(Number($("manualPoints").value)||0));persist()}
+$("resetPointsBtn").onclick=()=>{if(confirm("Reset current points to 0? Activities, rewards and daily history will NOT be deleted.")){state.points=0;persist();alert("Current points have been reset to 0.")}}
 
-function validEmail(email){
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function setAuthButtonsBusy(busy){
-  ["signInBtn","createAccountBtn","forgotPasswordBtn","sendResetBtn"].forEach(id=>{
-    const el=$(id);
-    if(el) el.disabled=busy;
-  });
-}
-
-
-$("resetPointsBtn").onclick=()=>{
-  if(confirm("Reset current points to 0? This will not delete activities, rewards, or daily history.")){
-    state.points=0;
-    persist();
-    alert("Current points have been reset to 0.");
-  }
+$("addChildBtn").onclick=addChild;
+$("createFamilyBtn").onclick=createFamily;
+$("joinFamilyBtn").onclick=joinFamily;
+$("copyFamilyCodeBtn").onclick=async()=>{
+  const code=$("familyCodeLabel").textContent.trim();
+  try{await navigator.clipboard.writeText(code);alert("Family code copied: "+code)}catch{alert("Family code: "+code)}
 };
 
 $("signInBtn").onclick=async()=>{
-  const email=$("loginEmail").value.trim();
-  const password=$("loginPassword").value;
-  if(!validEmail(email)){
-    showAuthMessage("Please enter a valid parent email address.");
-    return;
-  }
-  if(!password){
-    showAuthMessage("Please enter your password.");
-    return;
-  }
-  try{
-    setAuthButtonsBusy(true);
-    await window.__fb.signInWithEmailAndPassword(auth,email,password);
-    showAuthMessage("✅ Signed in successfully. Cloud sync is now connected.",true);
-  }catch(e){
-    console.error(e);
-    showAuthMessage("Sign in failed: "+(e && e.message ? e.message : "Unknown error."));
-  }finally{
-    setAuthButtonsBusy(false);
-  }
+  const email=$("loginEmail").value.trim(),password=$("loginPassword").value;
+  if(!validEmail(email)){showMsg("authMessage","Please enter a valid email.");return}
+  try{await window.__fb.signInWithEmailAndPassword(auth,email,password);showMsg("authMessage","✅ Signed in.",true)}
+  catch(e){showMsg("authMessage","Sign in failed: "+e.message)}
 };
 $("createAccountBtn").onclick=async()=>{
-  const email=$("loginEmail").value.trim();
-  const password=$("loginPassword").value;
-  if(!validEmail(email)){
-    showAuthMessage("Please enter a valid parent email address.");
-    return;
-  }
-  if(password.length < 6){
-    showAuthMessage("Please choose a password with at least 6 characters.");
-    return;
-  }
-  try{
-    setAuthButtonsBusy(true);
-    await window.__fb.createUserWithEmailAndPassword(auth,email,password);
-    showAuthMessage("✅ Parent account created and signed in. Use this same login on iPhone, Android and computer.",true);
-  }catch(e){
-    console.error(e);
-    const msg=e && e.message ? e.message : "Unknown error.";
-    if(String(msg).includes("email-already-in-use")){
-      showAuthMessage("That email already has an account. Please use Sign in or Forgot password.");
-    }else{
-      showAuthMessage("Could not create account: "+msg);
-    }
-  }finally{
-    setAuthButtonsBusy(false);
-  }
+  const email=$("loginEmail").value.trim(),password=$("loginPassword").value;
+  if(!validEmail(email)){showMsg("authMessage","Please enter a valid email.");return}
+  if(password.length<6){showMsg("authMessage","Password must be at least 6 characters.");return}
+  try{await window.__fb.createUserWithEmailAndPassword(auth,email,password);showMsg("authMessage","✅ Account created and signed in.",true)}
+  catch(e){showMsg("authMessage","Could not create account: "+e.message)}
 };
-$("copyLoginEmailBtn").onclick=()=>{
-  $("resetEmail").value=$("loginEmail").value.trim();
-};
-
-$("forgotPasswordBtn").onclick=()=>{
-  const box=$("resetBox");
-  box.classList.toggle("hidden");
-  if(!$("resetEmail").value) $("resetEmail").value=$("loginEmail").value.trim();
-  showAuthMessage("Enter the parent email address, then press “Send reset email”.");
-};
-
-$("sendResetBtn").onclick=async()=>{
-  const email=($("resetEmail").value.trim() || $("loginEmail").value.trim());
-  if(!validEmail(email)){
-    showAuthMessage("Please enter the exact parent email address used for this account.");
-    return;
-  }
-  try{
-    setAuthButtonsBusy(true);
-    await window.__fb.sendPasswordResetEmail(auth,email);
-    $("resetEmail").value=email;
-    showAuthMessage(
-      "✅ Firebase accepted the password-reset request for "+email+
-      ". Check Inbox, Junk/Spam and Promotions. If no email arrives after 10 minutes, the address may not match an existing Firebase account or your mail provider may be delaying/filtering it.",
-      true
-    );
-  }catch(e){
-    console.error(e);
-    const code=e && e.code ? e.code : "";
-    const msg=e && e.message ? e.message : "Unknown error.";
-    showAuthMessage("Could not send reset email"+(code ? " ("+code+")" : "")+": "+msg);
-  }finally{
-    setAuthButtonsBusy(false);
-  }
-};
-
 $("signOutBtn").onclick=()=>window.__fb.signOut(auth);
+$("forgotPasswordBtn").onclick=()=>{$("resetBox").classList.toggle("hidden");$("resetEmail").value=$("loginEmail").value.trim()}
+$("copyLoginEmailBtn").onclick=()=>{$("resetEmail").value=$("loginEmail").value.trim()}
+$("sendResetBtn").onclick=async()=>{
+  const email=$("resetEmail").value.trim()||$("loginEmail").value.trim();
+  if(!validEmail(email)){showMsg("authMessage","Please enter the exact parent email.");return}
+  try{await window.__fb.sendPasswordResetEmail(auth,email);showMsg("authMessage","✅ Firebase accepted the reset request. Check Inbox, Spam/Junk and Promotions.",true)}
+  catch(e){showMsg("authMessage","Could not send reset email: "+e.message)}
+};
 
-saveLocal();
 render();
 initFirebase();
 </script>
