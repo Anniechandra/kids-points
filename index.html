@@ -57,7 +57,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 1</div>
+  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 2</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -123,7 +123,8 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
   <h3>🛟 Old Data Recovery</h3>
   <div id="legacySummary" class="notice"></div>
   <button class="btn secondary wide" id="downloadLegacyBtn" style="margin-top:8px">⬇️ Download backup first</button>
-  <div class="small" style="margin-top:8px">This only reads the older Kids Points data saved in this browser. It does not delete or overwrite it.</div>
+  <button class="btn primary wide" id="restoreLegacyBtn" style="margin-top:8px">♻️ Restore Aliyah to this family</button>
+  <div class="small" style="margin-top:8px">This reads the older Kids Points data saved in this browser and copies it into your current family. It does not delete the old browser copy.</div>
 </div>
 <div id="familySetup" class="hidden">
         <h3>👨‍👩‍👧‍👦 Family setup</h3>
@@ -261,7 +262,7 @@ function legacySnapshot(){
   return {hasOld,data};
 }
 function showLegacyRecovery(){
-  const box=$("legacyRecovery"), sum=$("legacySummary");
+  const box=$("legacyRecovery"), sum=$("legacySummary"), restore=$("restoreLegacyBtn");
   if(!box||!sum)return;
   const snap=legacySnapshot();
   box.classList.remove("hidden");
@@ -269,8 +270,13 @@ function showLegacyRecovery(){
     const d=snap.data;
     sum.textContent=`✅ Old browser data found: ${d.childName||"Child"} · ${Number(d.points)||0} points · ${d.activities.length} activities · ${d.rewards.length} rewards.`;
     sum.classList.remove("notice"); sum.classList.add("ok");
+    if(restore){
+      restore.disabled=!currentFamilyId;
+      restore.textContent=currentFamilyId ? `♻️ Restore ${d.childName||"Child"} to this family` : "♻️ Create a family first, then restore";
+    }
   }else{
     sum.textContent="⚠️ No older Kids Points browser data was detected on this browser.";
+    if(restore) restore.disabled=true;
   }
 }
 function downloadLegacyBackup(){
@@ -282,6 +288,74 @@ function downloadLegacyBackup(){
   a.download="kids-points-old-data-backup.json";
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+async function restoreLegacyToFamily(){
+  if(!currentUser){
+    alert("Please sign in first.");
+    return;
+  }
+  if(!currentFamilyId){
+    alert("Please create or join a family first.");
+    return;
+  }
+
+  const snap=legacySnapshot();
+  if(!snap.hasOld){
+    alert("No older Kids Points browser data was found on this browser.");
+    return;
+  }
+
+  const d=snap.data;
+  const displayName=d.childName||"Aliyah";
+
+  // Avoid accidental duplicate restore.
+  const existing=children.find(c=>(c.childName||"").trim().toLowerCase()===displayName.trim().toLowerCase());
+  if(existing){
+    alert(displayName+" already exists in this family. No duplicate was created.");
+    selectChild(existing.id);
+    return;
+  }
+
+  const ok=confirm(
+    `Restore ${displayName} into ${currentFamily?.name||"this family"}?\n\n`+
+    `${Number(d.points)||0} points\n${d.activities.length} activities\n${d.rewards.length} rewards\n\n`+
+    `Your downloaded backup and old browser data will remain untouched.`
+  );
+  if(!ok)return;
+
+  try{
+    const {collection,doc,setDoc,serverTimestamp}=window.__fb;
+    const ref=doc(collection(db,"families",currentFamilyId,"children"));
+
+    await setDoc(ref,{
+      childName:displayName,
+      points:Number(d.points)||0,
+      activities:firestoreActivities(d.activities),
+      rewards:firestoreRewards(d.rewards),
+      dailyEarned:d.dailyEarned||{},
+      dailyDetails:d.dailyDetails||{},
+      restoredFromLegacy:true,
+      restoredAt:serverTimestamp()
+    });
+
+    activeChildId=ref.id;
+    storageSet("kpActiveChild17",activeChildId);
+
+    showMsg(
+      "familyMessage",
+      `✅ ${displayName} restored to ${currentFamily?.name||"your family"} with ${d.activities.length} activities and ${d.rewards.length} rewards.`,
+      true
+    );
+
+    alert(
+      `✅ ${displayName} has been restored successfully.\n\n`+
+      `${Number(d.points)||0} points\n${d.activities.length} activities\n${d.rewards.length} rewards`
+    );
+  }catch(e){
+    console.error(e);
+    alert("Could not restore old data: "+(e?.message||e));
+  }
 }
 
 let auth=null,db=null,currentUser=null,currentFamilyId=null,currentFamily=null;
@@ -590,6 +664,7 @@ async function loadUserFamily(){
 
     $("familySetup").classList.toggle("hidden",!!currentFamilyId);
     $("familyAdmin").classList.toggle("hidden",!currentFamilyId);
+    showLegacyRecovery();
 
     if(!currentFamilyId){
       children=[];activeChildId=null;render();
@@ -696,6 +771,7 @@ render();
 initFirebase();
 
 $("downloadLegacyBtn").onclick=downloadLegacyBackup;
+$("restoreLegacyBtn").onclick=restoreLegacyToFamily;
 showLegacyRecovery();
 
 </script>
