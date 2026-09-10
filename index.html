@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.1</title>
+<title>Kids Points Public Family V18.2</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -110,6 +110,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
       <div class="history" id="dailyHistory"></div>
 
       <h2 class="section">🧾 What was earned today</h2>
+      <button class="btn secondary wide" id="undoLastEarnedBtn" style="margin-bottom:8px">↩ Undo last earned point</button>
       <div class="detail" id="todayDetails"></div>
     </div>
   </section>
@@ -654,6 +655,42 @@ function redeem(i){
 }
 function move(list,i,d){const j=i+d;if(j<0||j>=list.length)return;[list[i],list[j]]=[list[j],list[i]];persist()}
 
+
+function getTodayEntries(){
+  const k=dateKey();
+  return Array.isArray(state.dailyDetails[k]) ? state.dailyDetails[k] : [];
+}
+
+function undoEntryByIndex(entryIndex){
+  const k=dateKey();
+  const entries=getTodayEntries();
+  if(entryIndex<0 || entryIndex>=entries.length) return;
+
+  const entry=entries[entryIndex];
+  const pts=Math.max(0,Number(entry.pts)||0);
+  const label=entry.label||"Earned points";
+
+  if(!confirm(`Undo "${label}" (+${pts} ⭐)?\n\nThis removes it from today's earned history and reduces the current balance by ${pts}.`)){
+    return;
+  }
+
+  state.points=Math.max(0,(Number(state.points)||0)-pts);
+  entries.splice(entryIndex,1);
+  state.dailyDetails[k]=entries;
+  state.dailyEarned[k]=Math.max(0,(Number(state.dailyEarned[k])||0)-pts);
+
+  persist();
+}
+
+function undoLastEarned(){
+  const entries=getTodayEntries();
+  if(!entries.length){
+    alert("There are no earned points to undo today.");
+    return;
+  }
+  undoEntryByIndex(entries.length-1);
+}
+
 function render(){
   const haveChild=!!activeChildId;
   $("childContent").classList.toggle("hidden",!haveChild);
@@ -698,14 +735,18 @@ function render(){
   }
 
   const det=$("todayDetails");det.innerHTML="";
-  const entries=Array.isArray(state.dailyDetails[dateKey()])?state.dailyDetails[dateKey()]:[];
-  if(!entries.length){det.innerHTML='<div class="empty">No points earned yet today.</div>'}
-  else{
-    const g={}; entries.forEach(e=>g[e.label]=(g[e.label]||0)+(Number(e.pts)||0));
-    Object.entries(g).forEach(([name,pts])=>{
+  const entries=getTodayEntries();
+  $("undoLastEarnedBtn").disabled=!entries.length;
+  if(!entries.length){
+    det.innerHTML='<div class="empty">No points earned yet today.</div>';
+  }else{
+    entries.forEach((e,idx)=>{
       const row=document.createElement("div");row.className="detail-row";
-      row.innerHTML=`<span class="detail-name">${esc(name)}</span><span class="detail-points">+${pts} ⭐</span>`;
-      det.appendChild(row);
+      const left=document.createElement("span");left.className="detail-name";left.textContent=e.label||"Earned points";
+      const right=document.createElement("div");right.className="row";right.style.margin="0";
+      const pts=document.createElement("span");pts.className="detail-points";pts.textContent=`+${Number(e.pts)||0} ⭐`;
+      const undo=document.createElement("button");undo.className="btn danger";undo.textContent="Undo";undo.onclick=()=>undoEntryByIndex(idx);
+      right.append(pts,undo);row.append(left,right);det.appendChild(row);
     });
   }
 
@@ -974,6 +1015,7 @@ async function initFirebase(){
   }
 }
 
+$("undoLastEarnedBtn").onclick=undoLastEarned;
 $("activitiesTab").onclick=()=>{
   $("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");$("adminView").classList.add("hidden");
   $("activitiesTab").classList.add("active");$("parentTab").classList.remove("active");$("adminTab").classList.remove("active");
