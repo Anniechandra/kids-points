@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Family V17</title>
+<title>Kids Points Public Family V18</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -60,12 +60,24 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 .emoji-choice{border:1px solid #eee;background:#fafafa;border-radius:12px;padding:10px;font-size:28px;cursor:pointer}
 .emoji-choice:hover{background:#f0ebff}
 .icon-pick-btn{border:0;background:#f2effa;border-radius:12px;padding:8px 10px;font-size:24px;cursor:pointer}
+
+.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.admin-card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 3px 12px #00000010;text-align:center}
+.admin-number{font-size:34px;font-weight:900;color:#713cff}
+.admin-label{font-size:13px;color:#80798c;margin-top:4px}
+.admin-list{background:#fff;border-radius:18px;padding:10px 14px;box-shadow:0 3px 12px #00000010}
+.admin-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eee}
+.admin-row:last-child{border-bottom:0}
+.status-active{color:#168a45;font-weight:800}
+.status-inactive{color:#9a7a00;font-weight:800}
+.uidbox{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;word-break:break-all;background:#f5f2fb;border-radius:10px;padding:8px}
+@media(min-width:600px){.admin-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 </head>
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 5</div>
+  <div class="sub">Family & Multiple Children · Public Family V18</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -78,9 +90,10 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
     <span id="syncText" class="small"></span>
   </div>
 
-  <div class="tabs">
+  <div class="tabs" id="mainTabs">
     <button class="tab active" id="activitiesTab">👧 Activities</button>
     <button class="tab" id="parentTab">👩 Parent Mode</button>
+    <button class="tab hidden" id="adminTab">🛡️ App Admin</button>
   </div>
 
   <section id="activityView">
@@ -125,16 +138,15 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
           </div>
         </div>
         <div id="authMessage" class="notice hidden"></div>
+        <div id="ownerUidBox" class="hidden" style="margin-top:12px">
+          <div class="small"><b>App owner setup:</b> your Firebase User UID</div>
+          <div id="ownerUid" class="uidbox"></div>
+          <button class="btn secondary" id="copyUidBtn" style="margin-top:7px">Copy UID</button>
+        </div>
       </div>
 
-      <div id="legacyRecovery" class="family-card hidden">
-  <h3>🛟 Old Data Recovery</h3>
-  <div id="legacySummary" class="notice"></div>
-  <button class="btn secondary wide" id="downloadLegacyBtn" style="margin-top:8px">⬇️ Download backup first</button>
-  <button class="btn primary wide" id="restoreLegacyBtn" style="margin-top:8px">♻️ Restore Aliyah to this family</button>
-  <div class="small" style="margin-top:8px">This reads the older Kids Points data saved in this browser and copies it into your current family. It does not delete the old browser copy.</div>
-</div>
-<div id="familySetup" class="hidden">
+      <div id="legacyRecovery" class="hidden"></div>
+      <div id="familySetup" class="hidden">
         <h3>👨‍👩‍👧‍👦 Family setup</h3>
         <div class="small">Create a new family, or join an existing family using its family code.</div>
         <label>Family name</label>
@@ -205,6 +217,25 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
       </div>
 
       <div id="storageNotice" class="notice hidden">This browser is not allowing local storage. Use the GitHub Pages website rather than opening the HTML file directly.</div>
+    </div>
+  </section>
+
+  <section id="adminView" class="hidden">
+    <div class="panel">
+      <h2 style="margin-top:0">🛡️ App Admin Dashboard</h2>
+      <div class="small">Privacy-safe overview only. This dashboard does not show children's names, activities, rewards, points, or histories.</div>
+
+      <div class="admin-grid">
+        <div class="admin-card"><div class="admin-number" id="statFamilies">0</div><div class="admin-label">Families</div></div>
+        <div class="admin-card"><div class="admin-number" id="statActiveFamilies">0</div><div class="admin-label">Active in last 30 days</div></div>
+        <div class="admin-card"><div class="admin-number" id="statParents">0</div><div class="admin-label">Parent memberships</div></div>
+        <div class="admin-card"><div class="admin-number" id="statChildren">0</div><div class="admin-label">Children profiles</div></div>
+      </div>
+
+      <h3>Anonymous family activity</h3>
+      <div id="adminFamilyList" class="admin-list"></div>
+      <button class="btn secondary wide" id="refreshAdminBtn" style="margin-top:10px">↻ Refresh dashboard</button>
+      <div id="adminMessage" class="notice hidden"></div>
     </div>
   </section>
 </div>
@@ -315,24 +346,7 @@ function legacySnapshot(){
     storageGet("kpDetails12")!==null || storageGet("kpDailyDetails9")!==null;
   return {hasOld,data};
 }
-function showLegacyRecovery(){
-  const box=$("legacyRecovery"), sum=$("legacySummary"), restore=$("restoreLegacyBtn");
-  if(!box||!sum)return;
-  const snap=legacySnapshot();
-  box.classList.remove("hidden");
-  if(snap.hasOld){
-    const d=snap.data;
-    sum.textContent=`✅ Old browser data found: ${d.childName||"Child"} · ${Number(d.points)||0} points · ${d.activities.length} activities · ${d.rewards.length} rewards.`;
-    sum.classList.remove("notice"); sum.classList.add("ok");
-    if(restore){
-      restore.disabled=!currentFamilyId;
-      restore.textContent=currentFamilyId ? `♻️ Restore ${d.childName||"Child"} to this family` : "♻️ Create a family first, then restore";
-    }
-  }else{
-    sum.textContent="⚠️ No older Kids Points browser data was detected on this browser.";
-    if(restore) restore.disabled=true;
-  }
-}
+function showLegacyRecovery(){}
 function downloadLegacyBackup(){
   const snap=legacySnapshot();
   const payload={exportedAt:new Date().toISOString(),source:"Kids Points legacy browser storage",...snap};
@@ -396,6 +410,10 @@ async function restoreLegacyToFamily(){
 
     activeChildId=ref.id;
     storageSet("kpActiveChild17",activeChildId);
+    try{
+      const {increment}=window.__fb;
+      await writeFamilyStats({childCount:increment(1)});
+    }catch{}
 
     showMsg(
       "familyMessage",
@@ -414,6 +432,7 @@ async function restoreLegacyToFamily(){
 }
 
 let auth=null,db=null,currentUser=null,currentFamilyId=null,currentFamily=null;
+let isAppAdmin=false;
 let children=[],activeChildId=null,state=cloneDefaults();
 let unsubFamily=null,unsubChildren=null;
 let firebaseReady=false;
@@ -441,6 +460,85 @@ function saveActiveLocal(){
   storageSet("kpDetails12",JSON.stringify(state.dailyDetails));
 }
 
+
+async function writeFamilyStats(patch={}){
+  if(!firebaseReady||!currentUser||!currentFamilyId||!db)return;
+  try{
+    const {doc,setDoc,serverTimestamp}=window.__fb;
+    await setDoc(doc(db,"adminStats",currentFamilyId),{
+      lastActiveAt:serverTimestamp(),
+      status:"active",
+      ...patch
+    },{merge:true});
+  }catch(e){
+    console.warn("Admin stats update failed",e);
+  }
+}
+
+async function loadAdminDashboard(){
+  if(!isAppAdmin||!db)return;
+  try{
+    const {collection,getDocs}=window.__fb;
+    const snap=await getDocs(collection(db,"adminStats"));
+    const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+    const now=Date.now();
+    const days30=30*24*60*60*1000;
+    const millis=v=>{
+      try{
+        if(v && typeof v.toMillis==="function") return v.toMillis();
+        if(v && v.seconds) return v.seconds*1000;
+      }catch{}
+      return 0;
+    };
+
+    const active=rows.filter(r=>now-millis(r.lastActiveAt)<=days30).length;
+    const parents=rows.reduce((s,r)=>s+(Number(r.memberCount)||0),0);
+    const kids=rows.reduce((s,r)=>s+(Number(r.childCount)||0),0);
+
+    $("statFamilies").textContent=rows.length;
+    $("statActiveFamilies").textContent=active;
+    $("statParents").textContent=parents;
+    $("statChildren").textContent=kids;
+
+    const list=$("adminFamilyList"); list.innerHTML="";
+    if(!rows.length){
+      list.innerHTML='<div class="empty">No family statistics yet. Existing families will appear after they use V18.</div>';
+    }else{
+      rows.sort((a,b)=>millis(b.lastActiveAt)-millis(a.lastActiveAt));
+      rows.forEach((r,i)=>{
+        const last=millis(r.lastActiveAt);
+        const isActive=last && now-last<=days30;
+        const row=document.createElement("div"); row.className="admin-row";
+        const left=document.createElement("div");
+        left.innerHTML=`<b>Family ${i+1}</b><div class="small">${Number(r.memberCount)||0} parent(s) · ${Number(r.childCount)||0} child profile(s)</div>`;
+        const right=document.createElement("div");
+        const date=last?new Date(last).toLocaleDateString():"No activity yet";
+        right.innerHTML=`<div class="${isActive?"status-active":"status-inactive"}">${isActive?"Active":"Inactive"}</div><div class="small">${date}</div>`;
+        row.append(left,right); list.appendChild(row);
+      });
+    }
+    hideMsg("adminMessage");
+  }catch(e){
+    showMsg("adminMessage","Could not load admin dashboard: "+(e?.message||e));
+  }
+}
+
+async function checkAppAdmin(){
+  isAppAdmin=false;
+  $("adminTab").classList.add("hidden");
+  if(!currentUser||!db)return;
+  try{
+    const {doc,getDoc}=window.__fb;
+    const snap=await getDoc(doc(db,"admins",currentUser.uid));
+    isAppAdmin=snap.exists() && snap.data().enabled!==false;
+    $("adminTab").classList.toggle("hidden",!isAppAdmin);
+    if(isAppAdmin) await loadAdminDashboard();
+  }catch(e){
+    console.warn("Admin check failed",e);
+  }
+}
+
 async function saveChild(){
   saveActiveLocal();
   render();
@@ -459,6 +557,7 @@ async function saveChild(){
     },{merge:true});
     $("syncBadge").textContent="☁️ Synced";
     $("syncText").textContent=currentUser.email||"Connected";
+    writeFamilyStats();
   }catch(e){
     $("syncBadge").textContent="⚠️ Sync error";
     $("syncText").textContent=e.message;
@@ -632,6 +731,10 @@ async function deleteChild(id,name){
   if(!confirm(`Delete ${name||"this child"} and all of their points/history?`))return;
   const {doc,deleteDoc}=window.__fb;
   await deleteDoc(doc(db,"families",currentFamilyId,"children",id));
+  try{
+    const {increment}=window.__fb;
+    await writeFamilyStats({childCount:increment(-1)});
+  }catch{}
   if(activeChildId===id){activeChildId=null}
 }
 
@@ -650,6 +753,10 @@ async function addChild(){
     dailyDetails:{}
   });
   activeChildId=ref.id;
+  try{
+    const {increment}=window.__fb;
+    await writeFamilyStats({childCount:increment(1)});
+  }catch{}
 }
 
 async function createFamily(){
@@ -695,6 +802,8 @@ async function createFamily(){
       dailyDetails:seed.dailyDetails||{}
     });
     activeChildId=childRef.id;
+    currentFamilyId=familyId;
+    await writeFamilyStats({memberCount:1,childCount:1,createdAt:serverTimestamp()});
     showMsg("familyMessage","✅ Family created. Your existing child data was used for the first child.",true);
     await loadUserFamily();
   }catch(e){showMsg("familyMessage","Could not create family: "+e.message)}
@@ -712,6 +821,11 @@ async function joinFamily(){
       email:currentUser.email||"",role:"parent",inviteCode:code,joinedAt:serverTimestamp()
     });
     await setDoc(doc(db,"users",currentUser.uid),{familyId,email:currentUser.email||""},{merge:true});
+    currentFamilyId=familyId;
+    try{
+      const {increment}=window.__fb;
+      await writeFamilyStats({memberCount:increment(1)});
+    }catch{}
     showMsg("familyMessage","✅ Joined family successfully.",true);
     await loadUserFamily();
   }catch(e){showMsg("familyMessage","Could not join family: "+e.message)}
@@ -776,14 +890,18 @@ async function initFirebase(){
       $("signInBtn").classList.toggle("hidden",!!user);
       $("createAccountBtn").classList.toggle("hidden",!!user);
       $("forgotPasswordBtn").classList.toggle("hidden",!!user);
+      $("ownerUidBox").classList.toggle("hidden",!user);
+      if(user) $("ownerUid").textContent=user.uid;
 
       if(!user){
-        clearSubs();currentFamilyId=null;currentFamily=null;children=[];activeChildId=null;
+        clearSubs();currentFamilyId=null;currentFamily=null;children=[];activeChildId=null;isAppAdmin=false;
+        $("adminTab").classList.add("hidden");$("adminView").classList.add("hidden");
         $("familySetup").classList.add("hidden");$("familyAdmin").classList.add("hidden");
         $("syncBadge").textContent="☁️ Ready";$("syncText").textContent="Sign in to sync";
         render();return;
       }
       $("syncBadge").textContent="☁️ Connected";$("syncText").textContent=user.email||"Signed in";
+      await checkAppAdmin();
       await loadUserFamily();
     });
   }catch(e){
@@ -791,8 +909,20 @@ async function initFirebase(){
   }
 }
 
-$("activitiesTab").onclick=()=>{$("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");$("activitiesTab").classList.add("active");$("parentTab").classList.remove("active")}
-$("parentTab").onclick=()=>{$("parentView").classList.remove("hidden");$("activityView").classList.add("hidden");$("parentTab").classList.add("active");$("activitiesTab").classList.remove("active")}
+$("activitiesTab").onclick=()=>{
+  $("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");$("adminView").classList.add("hidden");
+  $("activitiesTab").classList.add("active");$("parentTab").classList.remove("active");$("adminTab").classList.remove("active");
+}
+$("parentTab").onclick=()=>{
+  $("parentView").classList.remove("hidden");$("activityView").classList.add("hidden");$("adminView").classList.add("hidden");
+  $("parentTab").classList.add("active");$("activitiesTab").classList.remove("active");$("adminTab").classList.remove("active");
+}
+$("adminTab").onclick=()=>{
+  if(!isAppAdmin)return;
+  $("adminView").classList.remove("hidden");$("parentView").classList.add("hidden");$("activityView").classList.add("hidden");
+  $("adminTab").classList.add("active");$("parentTab").classList.remove("active");$("activitiesTab").classList.remove("active");
+  loadAdminDashboard();
+}
 
 $("childIcon").onchange=e=>{state.childIcon=e.target.value.trim()||"👧";persist()}
 $("chooseChildIconBtn").onclick=()=>openEmojiPicker(em=>{
@@ -824,6 +954,13 @@ $("familyResetPointsBtn").onclick=()=>{
     alert(`${childLabel}'s current points have been reset to 0.`);
   }
 };
+
+
+$("copyUidBtn").onclick=async()=>{
+  const uid=$("ownerUid").textContent.trim();
+  try{await navigator.clipboard.writeText(uid);alert("UID copied.")}catch{alert(uid)}
+};
+$("refreshAdminBtn").onclick=loadAdminDashboard;
 
 $("addChildBtn").onclick=addChild;
 $("createFamilyBtn").onclick=createFamily;
@@ -859,8 +996,6 @@ $("sendResetBtn").onclick=async()=>{
 render();
 initFirebase();
 
-$("downloadLegacyBtn").onclick=downloadLegacyBackup;
-$("restoreLegacyBtn").onclick=restoreLegacyToFamily;
 showLegacyRecovery();
 
 </script>
