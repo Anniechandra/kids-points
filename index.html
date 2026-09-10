@@ -57,7 +57,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 2</div>
+  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 3</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -152,6 +152,13 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
         <h3>Children</h3>
         <div id="childrenAdmin"></div>
         <button class="btn secondary wide" id="addChildBtn">➕ Add child</button>
+        <button class="btn danger wide" id="familyResetPointsBtn"
+          style="margin-top:10px;font-size:17px;padding:14px;background:#ffe3e3;color:#9d1717;border:2px solid #efb7b7;">
+          🔄 Reset selected child points to 0
+        </button>
+        <div class="small" style="margin-top:6px">
+          Select a child first. This resets only the current balance and keeps activities, rewards and daily history.
+        </div>
       </div>
 
       <div id="childEditorBlock" class="hidden">
@@ -175,7 +182,8 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
           <button class="btn primary" id="addManual">+ Add</button>
           <button class="btn danger" id="subManual">− Subtract</button>
         </div>
-        <button class="btn danger wide" id="resetPointsBtn" style="margin-top:10px;font-size:17px;padding:14px">
+        <button class="btn danger wide" id="resetPointsBtn"
+          style="margin-top:10px;font-size:17px;padding:14px;background:#ffe3e3;color:#9d1717;border:2px solid #efb7b7;">
           🔄 Reset current points to 0
         </button>
         <div class="small" style="margin-top:6px">This keeps activities, rewards and daily history.</div>
@@ -556,7 +564,10 @@ function selectChild(id){
     rewards:normalizeRewards(c.rewards),
     dailyEarned:c.dailyEarned||{},dailyDetails:c.dailyDetails||{}
   };
-  storageSet("kpActiveChild17",id);render();
+  storageSet("kpActiveChild17",id);
+  const fr=$("familyResetPointsBtn");
+  if(fr) fr.textContent=`🔄 Reset ${state.childName}'s points to 0`;
+  render();
 }
 
 async function renameChild(id,oldName){
@@ -735,6 +746,20 @@ $("addReward").onclick=()=>{state.rewards.push(["🎁","New reward",20]);persist
 $("addManual").onclick=()=>addPoints(Number($("manualPoints").value)||0,"Manual points")
 $("subManual").onclick=()=>{state.points=Math.max(0,state.points-(Number($("manualPoints").value)||0));persist()}
 $("resetPointsBtn").onclick=()=>{if(confirm("Reset current points to 0? Activities, rewards and daily history will NOT be deleted.")){state.points=0;persist();alert("Current points have been reset to 0.")}}
+
+
+$("familyResetPointsBtn").onclick=()=>{
+  if(!activeChildId){
+    alert("Please restore, add, or select a child first.");
+    return;
+  }
+  const childLabel=state.childName||"this child";
+  if(confirm(`Reset ${childLabel}'s current points to 0?\n\nActivities, rewards and daily history will NOT be deleted.`)){
+    state.points=0;
+    persist();
+    alert(`${childLabel}'s current points have been reset to 0.`);
+  }
+};
 
 $("addChildBtn").onclick=addChild;
 $("createFamilyBtn").onclick=createFamily;
