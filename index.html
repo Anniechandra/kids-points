@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.2</title>
+<title>Kids Points Public Family V18.3</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -661,7 +661,12 @@ function getTodayEntries(){
   return Array.isArray(state.dailyDetails[k]) ? state.dailyDetails[k] : [];
 }
 
-function undoEntryByIndex(entryIndex){
+async function undoEntryByIndex(entryIndex, childIdAtClick=activeChildId){
+  if(!childIdAtClick || childIdAtClick!==activeChildId){
+    alert("Please select the child again, then try Undo.");
+    return;
+  }
+
   const k=dateKey();
   const entries=getTodayEntries();
   if(entryIndex<0 || entryIndex>=entries.length) return;
@@ -669,8 +674,9 @@ function undoEntryByIndex(entryIndex){
   const entry=entries[entryIndex];
   const pts=Math.max(0,Number(entry.pts)||0);
   const label=entry.label||"Earned points";
+  const childLabel=state.childName||"this child";
 
-  if(!confirm(`Undo "${label}" (+${pts} ⭐)?\n\nThis removes it from today's earned history and reduces the current balance by ${pts}.`)){
+  if(!confirm(`Undo ${childLabel}'s "${label}" (+${pts} ⭐)?\n\nThis removes it from today's earned history and reduces ${childLabel}'s current balance by ${pts}.`)){
     return;
   }
 
@@ -679,16 +685,20 @@ function undoEntryByIndex(entryIndex){
   state.dailyDetails[k]=entries;
   state.dailyEarned[k]=Math.max(0,(Number(state.dailyEarned[k])||0)-pts);
 
-  persist();
+  // Update the selected child's local UI immediately, then save that exact child to cloud.
+  saveActiveLocal();
+  render();
+  clearTimeout(window.__saveTimer);
+  await saveChild();
 }
 
 function undoLastEarned(){
   const entries=getTodayEntries();
   if(!entries.length){
-    alert("There are no earned points to undo today.");
+    alert(`There are no earned points to undo today for ${state.childName||"this child"}.`);
     return;
   }
-  undoEntryByIndex(entries.length-1);
+  undoEntryByIndex(entries.length-1,activeChildId);
 }
 
 function render(){
@@ -745,7 +755,7 @@ function render(){
       const left=document.createElement("span");left.className="detail-name";left.textContent=e.label||"Earned points";
       const right=document.createElement("div");right.className="row";right.style.margin="0";
       const pts=document.createElement("span");pts.className="detail-points";pts.textContent=`+${Number(e.pts)||0} ⭐`;
-      const undo=document.createElement("button");undo.className="btn danger";undo.textContent="Undo";undo.onclick=()=>undoEntryByIndex(idx);
+      const undo=document.createElement("button");undo.className="btn danger";undo.textContent="Undo";const renderedChildId=activeChildId;undo.onclick=()=>undoEntryByIndex(idx,renderedChildId);
       right.append(pts,undo);row.append(left,right);det.appendChild(row);
     });
   }
