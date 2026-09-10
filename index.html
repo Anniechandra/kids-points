@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Cloud Sync V13</title>
+<title>Kids Points Cloud Sync V14</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -57,7 +57,7 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Little achievements, big smiles · Cloud Sync V13</div>
+  <div class="sub">Little achievements, big smiles · Cloud Sync V14</div>
 
   <div class="score"><b id="points">0</b>⭐ Home points</div>
   <div class="today">Today earned: <b id="todayEarned">0</b> ⭐</div>
@@ -131,7 +131,7 @@ input,textarea{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radi
           <input id="resetEmail" type="email" autocomplete="email" placeholder="Enter your parent email">
           <button class="btn primary wide" id="sendResetBtn" style="margin-top:8px">Send reset email</button>
         </div>
-        <div id="authMessage" class="small"></div>
+        <div id="authMessage" class="notice hidden" style="margin-top:10px"></div>
         <div class="small" style="margin-top:8px">Use the same parent email/password on iPhone, Android and computer.</div>
       </div>
 
@@ -388,7 +388,7 @@ async function initFirebase(){
       if(!user){$("syncBadge").textContent="☁️ Ready";$("syncText").textContent="Sign in to sync.";return}
 
       $("syncBadge").textContent="☁️ Connected";
-      $("syncText").textContent=user.email||"Signed in";
+      $("syncText").textContent=(user.email||"Signed in")+" · syncing";
 
       const ref=fsMod.doc(db,"users",user.uid,"kidsPoints","main");
       const snap=await fsMod.getDoc(ref);
@@ -430,37 +430,97 @@ async function initFirebase(){
   }
 }
 
+
+function showAuthMessage(message, ok=false){
+  const box=$("authMessage");
+  box.textContent=message;
+  box.classList.remove("hidden","notice","ok");
+  box.classList.add(ok ? "ok" : "notice");
+}
+
+function validEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function setAuthButtonsBusy(busy){
+  ["signInBtn","createAccountBtn","forgotPasswordBtn","sendResetBtn"].forEach(id=>{
+    const el=$(id);
+    if(el) el.disabled=busy;
+  });
+}
+
 $("signInBtn").onclick=async()=>{
+  const email=$("loginEmail").value.trim();
+  const password=$("loginPassword").value;
+  if(!validEmail(email)){
+    showAuthMessage("Please enter a valid parent email address.");
+    return;
+  }
+  if(!password){
+    showAuthMessage("Please enter your password.");
+    return;
+  }
   try{
-    await window.__fb.signInWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value);
-    $("authMessage").textContent="Signed in.";
-  }catch(e){$("authMessage").textContent=e.message}
+    setAuthButtonsBusy(true);
+    await window.__fb.signInWithEmailAndPassword(auth,email,password);
+    showAuthMessage("✅ Signed in successfully. Cloud sync is now connected.",true);
+  }catch(e){
+    console.error(e);
+    showAuthMessage("Sign in failed: "+(e && e.message ? e.message : "Unknown error."));
+  }finally{
+    setAuthButtonsBusy(false);
+  }
 };
 $("createAccountBtn").onclick=async()=>{
+  const email=$("loginEmail").value.trim();
+  const password=$("loginPassword").value;
+  if(!validEmail(email)){
+    showAuthMessage("Please enter a valid parent email address.");
+    return;
+  }
+  if(password.length < 6){
+    showAuthMessage("Please choose a password with at least 6 characters.");
+    return;
+  }
   try{
-    await window.__fb.createUserWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value);
-    $("authMessage").textContent="Account created and signed in.";
-  }catch(e){$("authMessage").textContent=e.message}
+    setAuthButtonsBusy(true);
+    await window.__fb.createUserWithEmailAndPassword(auth,email,password);
+    showAuthMessage("✅ Parent account created and signed in. Use this same login on iPhone, Android and computer.",true);
+  }catch(e){
+    console.error(e);
+    const msg=e && e.message ? e.message : "Unknown error.";
+    if(String(msg).includes("email-already-in-use")){
+      showAuthMessage("That email already has an account. Please use Sign in or Forgot password.");
+    }else{
+      showAuthMessage("Could not create account: "+msg);
+    }
+  }finally{
+    setAuthButtonsBusy(false);
+  }
 };
 $("forgotPasswordBtn").onclick=()=>{
   const box=$("resetBox");
   box.classList.toggle("hidden");
   if(!$("resetEmail").value) $("resetEmail").value=$("loginEmail").value.trim();
-  $("authMessage").textContent="";
+  showAuthMessage("Enter the parent email address, then press “Send reset email”.");
 };
 
 $("sendResetBtn").onclick=async()=>{
-  const email=$("resetEmail").value.trim() || $("loginEmail").value.trim();
-  if(!email){
-    $("authMessage").textContent="Please enter your parent email address.";
+  const email=($("resetEmail").value.trim() || $("loginEmail").value.trim());
+  if(!validEmail(email)){
+    showAuthMessage("Please enter the exact parent email address used for this account.");
     return;
   }
   try{
+    setAuthButtonsBusy(true);
     await window.__fb.sendPasswordResetEmail(auth,email);
-    $("authMessage").textContent="Password reset email sent. Check your inbox and junk/spam folder.";
+    showAuthMessage("✅ Reset email request sent. Check Inbox, Junk/Spam and Promotions. Delivery can take a few minutes.",true);
     $("resetBox").classList.add("hidden");
   }catch(e){
-    $("authMessage").textContent=e && e.message ? e.message : "Could not send reset email.";
+    console.error(e);
+    showAuthMessage("Could not send reset email: "+(e && e.message ? e.message : "Unknown error."));
+  }finally{
+    setAuthButtonsBusy(false);
   }
 };
 
