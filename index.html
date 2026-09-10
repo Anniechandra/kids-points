@@ -57,7 +57,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 3</div>
+  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 4</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -163,11 +163,14 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 
       <div id="childEditorBlock" class="hidden">
         <h3>Current child</h3>
+        <label>Child icon</label>
+        <input id="childIcon" maxlength="4" placeholder="👧" style="max-width:110px;font-size:28px;text-align:center">
+        <div class="small">Tap the box and enter any emoji, for example 👧 👦 🧒 🌟 🦄 🐼.</div>
         <label>Child's name</label>
         <input id="childName">
 
         <h3>Activities</h3>
-        <div class="small">Use ⬆️ and ⬇️ to change the display order.</div>
+        <div class="small">Change the emoji in the first box. Use ⬆️ and ⬇️ to change the display order.</div>
         <div id="activityEditor"></div>
         <button class="btn secondary wide" id="addActivity">➕ Add activity</button>
 
@@ -248,6 +251,7 @@ function firestoreRewards(list){
 
 function cloneDefaults(){
   return {
+    childIcon:storageGet("kpChildIcon17")||"👧",
     childName:storageGet("kpName12")||storageGet("kpName4")||"Aliyah",
     points:Number(storageGet("kpPts12")||storageGet("kpPts4")||0)||0,
     activities:normalizeActivities(parse(storageGet("kpA12")||storageGet("kpA4"),DEFAULT_ACTIVITIES.map(x=>x.slice()))),
@@ -337,6 +341,7 @@ async function restoreLegacyToFamily(){
     const ref=doc(collection(db,"families",currentFamilyId,"children"));
 
     await setDoc(ref,{
+      childIcon:d.childIcon||"👧",
       childName:displayName,
       points:Number(d.points)||0,
       activities:firestoreActivities(d.activities),
@@ -385,6 +390,7 @@ function randomCode(){
 function saveActiveLocal(){
   if(!activeChildId)return;
   storageSet("kpActiveChild17",activeChildId);
+  storageSet("kpChildIcon17",state.childIcon||"👧");
   storageSet("kpName12",state.childName);
   storageSet("kpPts12",String(state.points));
   storageSet("kpA12",JSON.stringify(state.activities));
@@ -400,6 +406,7 @@ async function saveChild(){
   const {doc,setDoc,serverTimestamp}=window.__fb;
   try{
     await setDoc(doc(db,"families",currentFamilyId,"children",activeChildId),{
+      childIcon:state.childIcon||"👧",
       childName:state.childName,
       points:Number(state.points)||0,
       activities:firestoreActivities(state.activities),
@@ -454,9 +461,10 @@ function render(){
     renderChildrenUI(); return;
   }
 
-  $("title").textContent=`🌟 ${state.childName}'s Points`;
+  $("title").textContent=`${state.childIcon||"👧"} ${state.childName}'s Points`;
   $("points").textContent=Number(state.points)||0;
   $("todayEarned").textContent=Number(state.dailyEarned[dateKey()]||0);
+  $("childIcon").value=state.childIcon||"👧";
   $("childName").value=state.childName;
 
   const ag=$("activities");ag.innerHTML="";
@@ -508,7 +516,7 @@ function renderEditors(){
     row.append(
       makeButton("⬆️","move",()=>move(state.activities,i,-1),i===0),
       makeButton("⬇️","move",()=>move(state.activities,i,1),i===state.activities.length-1),
-      makeInput(a[0],v=>{state.activities[i][0]=v||"⭐";persist()},{style:"max-width:70px"}),
+      makeInput(a[0],v=>{state.activities[i][0]=(v||"⭐").trim();persist()},{style:"max-width:90px;font-size:26px;text-align:center"}),
       makeInput(a[1],v=>{state.activities[i][1]=v||"Activity";persist()}),
       makeInput(a[2],v=>{state.activities[i][2]=Math.max(0,Number(v)||0);persist()},{type:"number",style:"max-width:84px"}),
       makeButton("×","danger",()=>{state.activities.splice(i,1);persist()})
@@ -534,7 +542,7 @@ function renderChildrenUI(){
   const sw=$("childSwitcher");sw.innerHTML="";
   children.forEach(c=>{
     const b=document.createElement("button");b.className="child-pill"+(c.id===activeChildId?" active":"");
-    b.textContent=`${c.childName||"Child"} · ${Number(c.points)||0}⭐`;
+    b.textContent=`${c.childIcon||"👧"} ${c.childName||"Child"} · ${Number(c.points)||0}⭐`;
     b.onclick=()=>selectChild(c.id);sw.appendChild(b);
   });
 
@@ -542,7 +550,7 @@ function renderChildrenUI(){
   children.forEach(c=>{
     const box=document.createElement("div");box.className="child-admin";
     const top=document.createElement("div");top.className="topline";
-    const left=document.createElement("b");left.textContent=`${c.childName||"Child"} · ${Number(c.points)||0} ⭐`;
+    const left=document.createElement("b");left.textContent=`${c.childIcon||"👧"} ${c.childName||"Child"} · ${Number(c.points)||0} ⭐`;
     const choose=makeButton(c.id===activeChildId?"Selected":"Open","secondary",()=>selectChild(c.id));
     top.append(left,choose);box.appendChild(top);
 
@@ -559,6 +567,7 @@ function selectChild(id){
   const c=children.find(x=>x.id===id);if(!c)return;
   activeChildId=id;
   state={
+    childIcon:c.childIcon||"👧",
     childName:c.childName||"Child",points:Number(c.points)||0,
     activities:normalizeActivities(c.activities),
     rewards:normalizeRewards(c.rewards),
@@ -589,6 +598,7 @@ async function addChild(){
   const {collection,doc,setDoc}=window.__fb;
   const ref=doc(collection(db,"families",currentFamilyId,"children"));
   await setDoc(ref,{
+    childIcon:"🧒",
     childName:name.trim()||"Child",
     points:0,
     activities:DEFAULT_ACTIVITIES.map(a=>({emoji:a[0],name:a[1],pts:Number(a[2])||0})),
@@ -633,6 +643,7 @@ async function createFamily(){
       cost:Number(r[2])||0
     }));
     await setDoc(childRef,{
+      childIcon:seed.childIcon||"👧",
       childName:seed.childName||"Aliyah",
       points:Number(seed.points)||0,
       activities:safeActivities,
@@ -740,6 +751,7 @@ async function initFirebase(){
 $("activitiesTab").onclick=()=>{$("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");$("activitiesTab").classList.add("active");$("parentTab").classList.remove("active")}
 $("parentTab").onclick=()=>{$("parentView").classList.remove("hidden");$("activityView").classList.add("hidden");$("parentTab").classList.add("active");$("activitiesTab").classList.remove("active")}
 
+$("childIcon").onchange=e=>{state.childIcon=e.target.value.trim()||"👧";persist()}
 $("childName").onchange=e=>{state.childName=e.target.value.trim()||"Child";persist()}
 $("addActivity").onclick=()=>{state.activities.push(["⭐","New activity",1]);persist()}
 $("addReward").onclick=()=>{state.rewards.push(["🎁","New reward",20]);persist()}
