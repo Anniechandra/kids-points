@@ -57,7 +57,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery</div>
+  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 1</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -215,12 +215,34 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
 function storageGet(k){try{return localStorage.getItem(k)}catch{return null}}
 function storageSet(k,v){try{localStorage.setItem(k,v);return true}catch{return false}}
 function parse(v,f){try{return v?JSON.parse(v):f}catch{return f}}
+
+function normalizeActivities(list){
+  if(!Array.isArray(list)) return DEFAULT_ACTIVITIES.map(x=>x.slice());
+  return list.map(a=>{
+    if(Array.isArray(a)) return [a[0]??"⭐", a[1]??"Activity", Number(a[2])||0];
+    return [a?.emoji??"⭐", a?.name??"Activity", Number(a?.pts)||0];
+  });
+}
+function normalizeRewards(list){
+  if(!Array.isArray(list)) return DEFAULT_REWARDS.map(x=>x.slice());
+  return list.map(r=>{
+    if(Array.isArray(r)) return [r[0]??"🎁", r[1]??"Reward", Number(r[2])||0];
+    return [r?.emoji??"🎁", r?.name??"Reward", Number(r?.cost)||0];
+  });
+}
+function firestoreActivities(list){
+  return normalizeActivities(list).map(a=>({emoji:a[0],name:a[1],pts:Number(a[2])||0}));
+}
+function firestoreRewards(list){
+  return normalizeRewards(list).map(r=>({emoji:r[0],name:r[1],cost:Number(r[2])||0}));
+}
+
 function cloneDefaults(){
   return {
     childName:storageGet("kpName12")||storageGet("kpName4")||"Aliyah",
     points:Number(storageGet("kpPts12")||storageGet("kpPts4")||0)||0,
-    activities:parse(storageGet("kpA12")||storageGet("kpA4"),DEFAULT_ACTIVITIES.map(x=>x.slice())),
-    rewards:parse(storageGet("kpR12")||storageGet("kpR4"),DEFAULT_REWARDS.map(x=>x.slice())),
+    activities:normalizeActivities(parse(storageGet("kpA12")||storageGet("kpA4"),DEFAULT_ACTIVITIES.map(x=>x.slice()))),
+    rewards:normalizeRewards(parse(storageGet("kpR12")||storageGet("kpR4"),DEFAULT_REWARDS.map(x=>x.slice()))),
     dailyEarned:parse(storageGet("kpDaily12")||storageGet("kpDaily5"),{}),
     dailyDetails:parse(storageGet("kpDetails12")||storageGet("kpDailyDetails9"),{})
   };
@@ -298,8 +320,8 @@ async function saveChild(){
     await setDoc(doc(db,"families",currentFamilyId,"children",activeChildId),{
       childName:state.childName,
       points:Number(state.points)||0,
-      activities:state.activities,
-      rewards:state.rewards,
+      activities:firestoreActivities(state.activities),
+      rewards:firestoreRewards(state.rewards),
       dailyEarned:state.dailyEarned,
       dailyDetails:state.dailyDetails,
       updatedAt:serverTimestamp()
@@ -456,8 +478,8 @@ function selectChild(id){
   activeChildId=id;
   state={
     childName:c.childName||"Child",points:Number(c.points)||0,
-    activities:Array.isArray(c.activities)?c.activities:DEFAULT_ACTIVITIES.map(x=>x.slice()),
-    rewards:Array.isArray(c.rewards)?c.rewards:DEFAULT_REWARDS.map(x=>x.slice()),
+    activities:normalizeActivities(c.activities),
+    rewards:normalizeRewards(c.rewards),
     dailyEarned:c.dailyEarned||{},dailyDetails:c.dailyDetails||{}
   };
   storageSet("kpActiveChild17",id);render();
@@ -482,10 +504,12 @@ async function addChild(){
   const {collection,doc,setDoc}=window.__fb;
   const ref=doc(collection(db,"families",currentFamilyId,"children"));
   await setDoc(ref,{
-    childName:name.trim()||"Child",points:0,
-    activities:DEFAULT_ACTIVITIES.map(x=>x.slice()),
-    rewards:DEFAULT_REWARDS.map(x=>x.slice()),
-    dailyEarned:{},dailyDetails:{}
+    childName:name.trim()||"Child",
+    points:0,
+    activities:DEFAULT_ACTIVITIES.map(a=>({emoji:a[0],name:a[1],pts:Number(a[2])||0})),
+    rewards:DEFAULT_REWARDS.map(r=>({emoji:r[0],name:r[1],cost:Number(r[2])||0})),
+    dailyEarned:{},
+    dailyDetails:{}
   });
   activeChildId=ref.id;
 }
@@ -513,11 +537,23 @@ async function createFamily(){
 
     const childRef=doc(collection(db,"families",familyId,"children"));
     const seed=cloneDefaults();
+    const safeActivities=(Array.isArray(seed.activities)?seed.activities:DEFAULT_ACTIVITIES).map(a=>({
+      emoji:String(a[0]??"⭐"),
+      name:String(a[1]??"Activity"),
+      pts:Number(a[2])||0
+    }));
+    const safeRewards=(Array.isArray(seed.rewards)?seed.rewards:DEFAULT_REWARDS).map(r=>({
+      emoji:String(r[0]??"🎁"),
+      name:String(r[1]??"Reward"),
+      cost:Number(r[2])||0
+    }));
     await setDoc(childRef,{
-      childName:seed.childName||"Aliyah",points:Number(seed.points)||0,
-      activities:Array.isArray(seed.activities)?seed.activities:DEFAULT_ACTIVITIES.map(x=>x.slice()),
-      rewards:Array.isArray(seed.rewards)?seed.rewards:DEFAULT_REWARDS.map(x=>x.slice()),
-      dailyEarned:seed.dailyEarned||{},dailyDetails:seed.dailyDetails||{}
+      childName:seed.childName||"Aliyah",
+      points:Number(seed.points)||0,
+      activities:safeActivities,
+      rewards:safeRewards,
+      dailyEarned:seed.dailyEarned||{},
+      dailyDetails:seed.dailyDetails||{}
     });
     activeChildId=childRef.id;
     showMsg("familyMessage","✅ Family created. Your existing child data was used for the first child.",true);
