@@ -52,12 +52,20 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 .child-admin{border:1px solid #eee7f7;border-radius:14px;padding:10px;margin:8px 0}
 .topline{display:flex;justify-content:space-between;align-items:center;gap:8px}
 @media(min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+.emoji-picker{position:fixed;inset:0;background:#0006;display:flex;align-items:center;justify-content:center;padding:18px;z-index:9999}
+.emoji-picker.hidden{display:none}
+.emoji-panel{background:#fff;border-radius:20px;padding:16px;max-width:520px;width:100%;max-height:80vh;overflow:auto;box-shadow:0 10px 40px #0003}
+.emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px}
+.emoji-choice{border:1px solid #eee;background:#fafafa;border-radius:12px;padding:10px;font-size:28px;cursor:pointer}
+.emoji-choice:hover{background:#f0ebff}
+.icon-pick-btn{border:0;background:#f2effa;border-radius:12px;padding:8px 10px;font-size:24px;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 4</div>
+  <div class="sub">Family & Multiple Children · Cloud Sync V17 Recovery Fix 5</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -164,13 +172,17 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
       <div id="childEditorBlock" class="hidden">
         <h3>Current child</h3>
         <label>Child icon</label>
-        <input id="childIcon" maxlength="4" placeholder="👧" style="max-width:110px;font-size:28px;text-align:center">
-        <div class="small">Tap the box and enter any emoji, for example 👧 👦 🧒 🌟 🦄 🐼.</div>
+        <div class="row">
+          <button type="button" class="icon-pick-btn" id="childIconPickBtn">👧</button>
+          <button type="button" class="btn secondary" id="chooseChildIconBtn">Choose icon</button>
+        </div>
+        <input id="childIcon" class="hidden" value="👧">
+        <div class="small">Tap “Choose icon” to pick from the icon gallery.</div>
         <label>Child's name</label>
         <input id="childName">
 
         <h3>Activities</h3>
-        <div class="small">Change the emoji in the first box. Use ⬆️ and ⬇️ to change the display order.</div>
+        <div class="small">Tap the emoji button to choose a new icon. Use ⬆️ and ⬇️ to change the display order.</div>
         <div id="activityEditor"></div>
         <button class="btn secondary wide" id="addActivity">➕ Add activity</button>
 
@@ -206,6 +218,36 @@ const FIREBASE_CONFIG={
   projectId:"kids-points-f328c",
   appId:"1:239937856623:web:d5702e442fa009e462999a"
 };
+
+
+const EMOJI_CHOICES=[
+"👧","👦","🧒","🌟","⭐","✨","🌈","🦄","🐼","🐶","🐱","🐰",
+"🎹","🎸","🥁","🎤","🎻","🎺","📚","✏️","📝","🧮","🎓","🧠",
+"🏊","⛳","⚽","🏀","🏃","💃","🩰","🥋","🚲","🛹","🎯","🏆",
+"😊","😁","🥰","😴","⏰","🛏️","🧹","🧺","🧼","🥗","🍎","🥦",
+"🚗","🚌","🏠","🌍","🎨","🧩","🪄","🎁","🍦","🎬","🍕","📣"
+];
+
+let emojiTargetSetter=null;
+
+function openEmojiPicker(setter){
+  emojiTargetSetter=setter;
+  const grid=$("emojiGrid");
+  grid.innerHTML="";
+  EMOJI_CHOICES.forEach(em=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="emoji-choice";
+    b.textContent=em;
+    b.onclick=()=>{
+      if(emojiTargetSetter) emojiTargetSetter(em);
+      $("emojiPicker").classList.add("hidden");
+      emojiTargetSetter=null;
+    };
+    grid.appendChild(b);
+  });
+  $("emojiPicker").classList.remove("hidden");
+}
 
 const DEFAULT_ACTIVITIES=[
 ["🎹","Piano & Theory",1],["🧮","Math IXL & notebook 2",1],["📚","Reading",1],["🥁","Drum Practice",1],
@@ -465,6 +507,7 @@ function render(){
   $("points").textContent=Number(state.points)||0;
   $("todayEarned").textContent=Number(state.dailyEarned[dateKey()]||0);
   $("childIcon").value=state.childIcon||"👧";
+  $("childIconPickBtn").textContent=state.childIcon||"👧";
   $("childName").value=state.childName;
 
   const ag=$("activities");ag.innerHTML="";
@@ -516,7 +559,7 @@ function renderEditors(){
     row.append(
       makeButton("⬆️","move",()=>move(state.activities,i,-1),i===0),
       makeButton("⬇️","move",()=>move(state.activities,i,1),i===state.activities.length-1),
-      makeInput(a[0],v=>{state.activities[i][0]=(v||"⭐").trim();persist()},{style:"max-width:90px;font-size:26px;text-align:center"}),
+      (()=>{const b=document.createElement("button");b.type="button";b.className="icon-pick-btn";b.textContent=a[0]||"⭐";b.title="Choose activity icon";b.onclick=()=>openEmojiPicker(em=>{state.activities[i][0]=em;persist()});return b})(),
       makeInput(a[1],v=>{state.activities[i][1]=v||"Activity";persist()}),
       makeInput(a[2],v=>{state.activities[i][2]=Math.max(0,Number(v)||0);persist()},{type:"number",style:"max-width:84px"}),
       makeButton("×","danger",()=>{state.activities.splice(i,1);persist()})
@@ -752,6 +795,15 @@ $("activitiesTab").onclick=()=>{$("activityView").classList.remove("hidden");$("
 $("parentTab").onclick=()=>{$("parentView").classList.remove("hidden");$("activityView").classList.add("hidden");$("parentTab").classList.add("active");$("activitiesTab").classList.remove("active")}
 
 $("childIcon").onchange=e=>{state.childIcon=e.target.value.trim()||"👧";persist()}
+$("chooseChildIconBtn").onclick=()=>openEmojiPicker(em=>{
+  state.childIcon=em;
+  $("childIcon").value=em;
+  $("childIconPickBtn").textContent=em;
+  persist();
+});
+$("childIconPickBtn").onclick=$("chooseChildIconBtn").onclick;
+$("closeEmojiPicker").onclick=()=>{$("emojiPicker").classList.add("hidden");emojiTargetSetter=null};
+$("emojiPicker").onclick=e=>{if(e.target===$("emojiPicker")){$("emojiPicker").classList.add("hidden");emojiTargetSetter=null}};
 $("childName").onchange=e=>{state.childName=e.target.value.trim()||"Child";persist()}
 $("addActivity").onclick=()=>{state.activities.push(["⭐","New activity",1]);persist()}
 $("addReward").onclick=()=>{state.rewards.push(["🎁","New reward",20]);persist()}
@@ -812,5 +864,16 @@ $("restoreLegacyBtn").onclick=restoreLegacyToFamily;
 showLegacyRecovery();
 
 </script>
+
+<div id="emojiPicker" class="emoji-picker hidden">
+  <div class="emoji-panel">
+    <div class="topline">
+      <h3 style="margin:0">Choose an icon</h3>
+      <button class="btn secondary" id="closeEmojiPicker">Close</button>
+    </div>
+    <div id="emojiGrid" class="emoji-grid"></div>
+  </div>
+</div>
+
 </body>
 </html>
