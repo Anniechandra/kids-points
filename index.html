@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.4</title>
+<title>Kids Points Public Family V18.5</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -259,21 +259,28 @@ const FIREBASE_CONFIG={
 };
 
 
-const EMOJI_CHOICES=[
-"👧","👦","🧒","🌟","⭐","✨","🌈","🦄","🐼","🐶","🐱","🐰",
-"🎹","🎸","🥁","🎤","🎻","🎺","📚","✏️","📝","🧮","🎓","🧠",
-"🏊","⛳","⚽","🏀","🏃","💃","🩰","🥋","🚲","🛹","🎯","🏆",
-"😊","😁","🥰","😴","⏰","🛏️","🧹","🧺","🧼","🥗","🍎","🥦",
-"🚗","🚌","🏠","🌍","🎨","🧩","🪄","🎁","🍦","🎬","🍕","📣"
-];
+const EMOJI_CATEGORIES={
+  "😊 Faces":["😊","😁","😄","😃","😀","🥰","😍","🤩","🥳","😎","🤗","😇","🙂","😉","😋","🤓","🫶","👍","👏","🙌","💪","🙏"],
+  "❤️ Hearts":["❤️","🩷","🧡","💛","💚","🩵","💙","💜","🤍","🤎","💕","💖","💗","💓","💞","💝","💟","❣️"],
+  "✨ Stars & Magic":["⭐","🌟","✨","💫","🌈","🦄","🪄","🧚","🧚‍♀️","🧚‍♂️","👑","💎","🔮","☀️","🌙","☁️","🌸","🌺","🌻","🌷"],
+  "📚 School":["📚","📖","✏️","📝","🖍️","🖊️","📒","📓","📕","📗","📘","📙","📐","📏","🧮","🎓","🧠","💡","🔬","🔭","🧪","🌍","🗺️","💻","⌨️","🖥️"],
+  "🎵 Music & Art":["🎹","🎸","🎻","🥁","🎤","🎺","🎷","🪈","🎶","🎵","🎼","🎧","🩰","💃","🕺","🎨","🖌️","🖼️","📸","🎬","🎭"],
+  "⚽ Sports":["⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🥏","🎱","🏓","🏸","🥅","🏒","🏑","🥍","🏏","⛳","🏹","🤺","🥋","🥊","🏊","🤸","⛹️","🏃","🚴","🛹","⛸️","🎿","🏆","🥇","🎯"],
+  "🏠 Chores":["🏠","🛏️","⏰","🪥","🧼","🛁","🚿","🧹","🧽","🧺","🧻","🗑️","🍽️","🥣","🥄","🧴","👕","👚","👗","👟","🎒","🪴","🐕‍🦺"],
+  "🍎 Food":["🍎","🍏","🍊","🍌","🍓","🫐","🍇","🍉","🍒","🥝","🥕","🥦","🥗","🌽","🥚","🥛","🧀","🍞","🥪","🍕","🍔","🍜","🍚","🍪","🧁","🍰","🍦","🍭","🍫","🥤","💧"],
+  "🐶 Animals":["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔","🐧","🐦","🦄","🐝","🦋","🐞","🐢","🐠","🐬","🐳","🐘","🦒","🦘"],
+  "🎉 Fun & Rewards":["🎉","🎊","🎈","🎁","🏆","🥇","🏅","🎖️","🎀","🧸","🧩","🎮","🕹️","🎲","♟️","🪁","🛝","🎡","🎢","🎠","🍿","🎬","📺","📱"],
+  "🚗 Places & Travel":["🚗","🚙","🚌","🚲","🛴","✈️","🚀","🚂","🚆","🚢","⛵","🏡","🏫","🏥","🏖️","🏕️","⛰️","🌳","🌊","🗽","🏰"],
+  "👧 People":["👧","👦","🧒","👶","👩","👨","👵","👴","👩‍🏫","👨‍🏫","👩‍⚕️","👨‍⚕️","👩‍🍳","👨‍🍳","👩‍🚀","👨‍🚀","👩‍🎨","👨‍🎨"]
+};
+const EMOJI_CHOICES=Object.values(EMOJI_CATEGORIES).flat();
 
 let emojiTargetSetter=null;
 
-function openEmojiPicker(setter){
-  emojiTargetSetter=setter;
+function renderEmojiCategory(category){
   const grid=$("emojiGrid");
   grid.innerHTML="";
-  EMOJI_CHOICES.forEach(em=>{
+  (EMOJI_CATEGORIES[category]||EMOJI_CHOICES).forEach(em=>{
     const b=document.createElement("button");
     b.type="button";
     b.className="emoji-choice";
@@ -284,6 +291,23 @@ function openEmojiPicker(setter){
       emojiTargetSetter=null;
     };
     grid.appendChild(b);
+  });
+}
+
+function openEmojiPicker(setter){
+  emojiTargetSetter=setter;
+  const bar=$("emojiCategoryBar");
+  bar.innerHTML="";
+  Object.keys(EMOJI_CATEGORIES).forEach((category,index)=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="btn secondary";
+    b.style.whiteSpace="nowrap";
+    b.style.padding="8px 10px";
+    b.textContent=category;
+    b.onclick=()=>renderEmojiCategory(category);
+    bar.appendChild(b);
+    if(index===0) renderEmojiCategory(category);
   });
   $("emojiPicker").classList.remove("hidden");
 }
@@ -1153,7 +1177,8 @@ showLegacyRecovery();
       <h3 style="margin:0">Choose an icon</h3>
       <button class="btn secondary" id="closeEmojiPicker">Close</button>
     </div>
-    <div id="emojiGrid" class="emoji-grid"></div>
+    <div id="emojiCategoryBar" class="row" style="overflow-x:auto;flex-wrap:nowrap;margin-bottom:10px;padding-bottom:4px"></div>
+      <div id="emojiGrid" class="emoji-grid"></div>
   </div>
 </div>
 
