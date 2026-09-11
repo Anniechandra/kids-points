@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.3</title>
+<title>Kids Points Public Family V18.4</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -218,10 +218,10 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 
         <h3>✨ Point sound</h3>
         <div class="row">
-          <button class="btn secondary" id="togglePointSoundBtn">🔊 Fairy sound: On</button>
+          <button class="btn secondary" id="togglePointSoundBtn">🔊 Musical sparkle: On</button>
           <button class="btn secondary" id="testPointSoundBtn">✨ Test sound</button>
         </div>
-        <div class="small">A short magical chime plays whenever positive points are earned. No sound file is needed.</div>
+        <div class="small">A louder musical sparkle plays whenever positive points are earned. No sound file is needed.</div>
       </div>
 
       <div id="storageNotice" class="notice hidden">This browser is not allowing local storage. Use the GitHub Pages website rather than opening the HTML file directly.</div>
@@ -310,43 +310,63 @@ function fairyPointSound(){
     if(!AudioCtx) return;
     const ctx=new AudioCtx();
     const now=ctx.currentTime;
+
     const master=ctx.createGain();
     master.gain.setValueAtTime(0.0001,now);
-    master.gain.exponentialRampToValueAtTime(0.16,now+0.015);
-    master.gain.exponentialRampToValueAtTime(0.0001,now+0.9);
+    master.gain.exponentialRampToValueAtTime(0.42,now+0.012);
+    master.gain.setValueAtTime(0.42,now+0.42);
+    master.gain.exponentialRampToValueAtTime(0.0001,now+1.18);
     master.connect(ctx.destination);
 
-    const notes=[
-      {f:880,t:0,d:.22},
-      {f:1174.66,t:.10,d:.24},
-      {f:1567.98,t:.22,d:.30},
-      {f:2093,t:.36,d:.34}
+    // Bright, cheerful original reward melody: C6 - E6 - G6 - C7.
+    const melody=[
+      {f:1046.50,t:0.00,d:.32},
+      {f:1318.51,t:0.09,d:.34},
+      {f:1567.98,t:0.18,d:.38},
+      {f:2093.00,t:0.30,d:.55}
     ];
-    notes.forEach(n=>{
+
+    melody.forEach((n,i)=>{
       const osc=ctx.createOscillator();
-      const g=ctx.createGain();
+      const gain=ctx.createGain();
       osc.type="sine";
       osc.frequency.setValueAtTime(n.f,now+n.t);
-      g.gain.setValueAtTime(0.0001,now+n.t);
-      g.gain.exponentialRampToValueAtTime(0.15,now+n.t+.012);
-      g.gain.exponentialRampToValueAtTime(0.0001,now+n.t+n.d);
-      osc.connect(g); g.connect(master);
-      osc.start(now+n.t); osc.stop(now+n.t+n.d+.02);
+      gain.gain.setValueAtTime(0.0001,now+n.t);
+      gain.gain.exponentialRampToValueAtTime(i===3?0.34:0.27,now+n.t+.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001,now+n.t+n.d);
+      osc.connect(gain); gain.connect(master);
+      osc.start(now+n.t); osc.stop(now+n.t+n.d+.03);
+
+      // Bell harmonic for a more musical sparkle.
+      const harm=ctx.createOscillator();
+      const hg=ctx.createGain();
+      harm.type="triangle";
+      harm.frequency.setValueAtTime(n.f*2,now+n.t);
+      hg.gain.setValueAtTime(0.0001,now+n.t);
+      hg.gain.exponentialRampToValueAtTime(0.075,now+n.t+.006);
+      hg.gain.exponentialRampToValueAtTime(0.0001,now+n.t+n.d*.72);
+      harm.connect(hg); hg.connect(master);
+      harm.start(now+n.t); harm.stop(now+n.t+n.d);
     });
 
-    [1318.51,1760,2637.02].forEach((f,i)=>{
+    // Short high-frequency sparkle flourish.
+    const sparkles=[
+      {f:2637.02,t:.34},{f:3135.96,t:.42},{f:3520,t:.50},
+      {f:4186.01,t:.59},{f:3135.96,t:.68}
+    ];
+    sparkles.forEach((s,i)=>{
       const osc=ctx.createOscillator();
       const g=ctx.createGain();
-      osc.type="triangle";
-      osc.frequency.setValueAtTime(f,now+.18+i*.08);
-      g.gain.setValueAtTime(.0001,now+.18+i*.08);
-      g.gain.exponentialRampToValueAtTime(.04,now+.19+i*.08);
-      g.gain.exponentialRampToValueAtTime(.0001,now+.45+i*.08);
+      osc.type=i%2?"sine":"triangle";
+      osc.frequency.setValueAtTime(s.f,now+s.t);
+      g.gain.setValueAtTime(.0001,now+s.t);
+      g.gain.exponentialRampToValueAtTime(.13,now+s.t+.006);
+      g.gain.exponentialRampToValueAtTime(.0001,now+s.t+.18);
       osc.connect(g); g.connect(master);
-      osc.start(now+.18+i*.08); osc.stop(now+.48+i*.08);
+      osc.start(now+s.t); osc.stop(now+s.t+.20);
     });
 
-    setTimeout(()=>{try{ctx.close()}catch{}},1200);
+    setTimeout(()=>{try{ctx.close()}catch{}},1500);
   }catch(e){
     console.warn("Point sound unavailable",e);
   }
@@ -354,7 +374,7 @@ function fairyPointSound(){
 
 function updatePointSoundButton(){
   const b=$("togglePointSoundBtn");
-  if(b) b.textContent=pointSoundEnabled ? "🔊 Fairy sound: On" : "🔇 Fairy sound: Off";
+  if(b) b.textContent=pointSoundEnabled ? "🔊 Musical sparkle: On" : "🔇 Musical sparkle: Off";
 }
 
 function dateKey(d=new Date()){
