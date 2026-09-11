@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.6.2.1</title>
+<title>Kids Points Public Family V18.6.3.1</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -85,7 +85,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Public Family V18.6.2</div>
+  <div class="sub">Family & Multiple Children · Public Family V18.6.3</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -186,7 +186,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
           🔄 Reset selected child points to 0
         </button>
         <div class="small" style="margin-top:6px">
-          Select a child first. This resets only the current balance and keeps activities, rewards and daily history.
+          Select a child first. This resets the current balance to 0, keeps activities, rewards and daily history, and restarts milestone celebrations from 10.
         </div>
       </div>
 
@@ -222,7 +222,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
           style="margin-top:10px;font-size:17px;padding:14px;background:#ffe3e3;color:#9d1717;border:2px solid #efb7b7;">
           🔄 Reset current points to 0
         </button>
-        <div class="small" style="margin-top:6px">This keeps activities, rewards and daily history.</div>
+        <div class="small" style="margin-top:6px">This keeps activities, rewards and daily history, and restarts milestone celebrations from 10.</div>
 
         <h3>✨ Point sound</h3>
         <select id="pointSoundSelect" class="sound-select">
@@ -1176,7 +1176,7 @@ $("addActivity").onclick=()=>{state.activities.push(["⭐","New activity",1]);pe
 $("addReward").onclick=()=>{state.rewards.push(["🎁","New reward",20]);persist()}
 $("addManual").onclick=()=>addPoints(Number($("manualPoints").value)||0,"Manual points")
 $("subManual").onclick=()=>{state.points=Math.max(0,state.points-(Number($("manualPoints").value)||0));persist()}
-$("resetPointsBtn").onclick=()=>{if(confirm("Reset current points to 0? Activities, rewards and daily history will NOT be deleted.")){state.points=0;persist();alert("Current points have been reset to 0.")}}
+$("resetPointsBtn").onclick=()=>{if(confirm("Reset current points to 0? Activities, rewards and daily history will NOT be deleted.")){state.points=0;state.highestMilestone=0;persist();alert("Current points have been reset to 0. Milestone celebrations will start again from 10 points.")}}
 
 
 $("familyResetPointsBtn").onclick=()=>{
@@ -1187,8 +1187,9 @@ $("familyResetPointsBtn").onclick=()=>{
   const childLabel=state.childName||"this child";
   if(confirm(`Reset ${childLabel}'s current points to 0?\n\nActivities, rewards and daily history will NOT be deleted.`)){
     state.points=0;
+    state.highestMilestone=0;
     persist();
-    alert(`${childLabel}'s current points have been reset to 0.`);
+    alert(`${childLabel}'s current points have been reset to 0. Milestone celebrations will start again from 10 points.`);
   }
 };
 
