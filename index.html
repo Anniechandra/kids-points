@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.6.3.1</title>
+<title>Kids Points Public Family V18.6.4</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -85,7 +85,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Public Family V18.6.3</div>
+  <div class="sub">Family & Multiple Children · Public Family V18.6.4</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -96,6 +96,11 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
   <div class="syncbar">
     <span id="syncBadge" class="badge">☁️ Connecting…</span>
     <span id="syncText" class="small"></span>
+  </div>
+
+  <div class="ok" style="background:#faf8ff;border-color:#d9cdf8;margin:8px 0 12px;">
+    <b>🛡️ App Admin Dashboard — statistics only</b><br>
+    <span class="small"><b>Privacy-safe overview only.</b> The dashboard does not show children's names, activities, rewards, points, or histories.</span>
   </div>
 
   <div class="tabs" id="mainTabs">
@@ -208,7 +213,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
         <button class="btn secondary wide" id="addActivity">➕ Add activity</button>
 
         <h3>Rewards</h3>
-        <div class="small">Use ⬆️ and ⬇️ to change the display order.</div>
+        <div class="small">Tap the emoji button to choose a reward icon from multiple lists. Use ⬆️ and ⬇️ to change the display order.</div>
         <div id="rewardEditor"></div>
         <button class="btn secondary wide" id="addReward">➕ Add reward</button>
 
@@ -306,40 +311,39 @@ const EMOJI_CATEGORIES={
   "👧 People":["👧","👦","🧒","👶","👩","👨","👵","👴","👩‍🏫","👨‍🏫","👩‍⚕️","👨‍⚕️","👩‍🍳","👨‍🍳","👩‍🚀","👨‍🚀","👩‍🎨","👨‍🎨"]
 };
 const EMOJI_CHOICES=Object.values(EMOJI_CATEGORIES).flat();
+const REWARD_EMOJI_CATEGORIES={
+"🎁 Gifts":["🎁","🎀","💝","🛍️","🧸","🎟️","💰","💎","👑","🏆","🥇","🏅"],
+"🍦 Treats":["🍦","🍨","🧁","🍰","🍪","🍩","🍫","🍬","🍭","🍿","🥤","🧋","🍓","🍕","🍔","🍟"],
+"🎮 Games & Fun":["🎮","🕹️","🎲","🧩","🎯","🎳","🪁","🛝","🎡","🎢","🎠","🎈","🎉","🥳"],
+"🎬 Entertainment":["🎬","🎥","📺","🍿","🎧","🎵","🎤","🎹","🎸","📱","💻","📚","🎨","📸"],
+"🧸 Toys":["🧸","🪆","🧩","🪀","🪁","🎮","🚂","🚗","🚀","🦄","🐻","🐰","🐶","⚽","🎨"],
+"⚽ Activities":["⚽","🏀","🎾","🏸","🏓","🏊","🚴","🛹","⛸️","🎿","🤸","🤺","🥋","⛳","🎯","🎹","🩰","🎨"],
+"🚗 Trips & Outings":["🚗","🚙","🚌","🚂","✈️","🚢","⛵","🏖️","🏕️","⛰️","🌳","🌊","🏰","🎡","🎢","🛝"],
+"❤️ Special Time":["❤️","🩷","💕","💖","🥰","😍","🤗","🫶","👩‍👧","👨‍👧","👨‍👩‍👧","🏠","🌸","🌈","☀️","⭐","✨"],
+"✨ Celebration":["⭐","🌟","✨","💫","🌈","🎉","🎊","🥳","🎈","🎁","🏆","🥇","🏅","👑","💎","🦄","🪄","🧚"],
+"😊 All Emojis":Object.values(EMOJI_CATEGORIES).flat()
+};
 
 let emojiTargetSetter=null;
 
+let activeEmojiCategories=EMOJI_CATEGORIES;
 function renderEmojiCategory(category){
-  const grid=$("emojiGrid");
-  grid.innerHTML="";
-  (EMOJI_CATEGORIES[category]||EMOJI_CHOICES).forEach(em=>{
-    const b=document.createElement("button");
-    b.type="button";
-    b.className="emoji-choice";
-    b.textContent=em;
-    b.onclick=()=>{
-      if(emojiTargetSetter) emojiTargetSetter(em);
-      $("emojiPicker").classList.add("hidden");
-      emojiTargetSetter=null;
-    };
+  const grid=$("emojiGrid");grid.innerHTML="";
+  (activeEmojiCategories[category]||EMOJI_CHOICES).forEach(em=>{
+    const b=document.createElement("button");b.type="button";b.className="emoji-choice";b.textContent=em;
+    b.onclick=()=>{if(emojiTargetSetter)emojiTargetSetter(em);$("emojiPicker").classList.add("hidden");emojiTargetSetter=null;};
     grid.appendChild(b);
   });
 }
-
-function openEmojiPicker(setter){
+function openEmojiPicker(setter,mode="general"){
   emojiTargetSetter=setter;
-  const bar=$("emojiCategoryBar");
-  bar.innerHTML="";
-  Object.keys(EMOJI_CATEGORIES).forEach((category,index)=>{
-    const b=document.createElement("button");
-    b.type="button";
-    b.className="btn secondary";
-    b.style.whiteSpace="nowrap";
-    b.style.padding="8px 10px";
-    b.textContent=category;
-    b.onclick=()=>renderEmojiCategory(category);
-    bar.appendChild(b);
-    if(index===0) renderEmojiCategory(category);
+  activeEmojiCategories=mode==="reward"?REWARD_EMOJI_CATEGORIES:EMOJI_CATEGORIES;
+  const bar=$("emojiCategoryBar");bar.innerHTML="";
+  Object.keys(activeEmojiCategories).forEach((category,index)=>{
+    const b=document.createElement("button");b.type="button";b.className="btn secondary";
+    b.style.whiteSpace="nowrap";b.style.padding="8px 10px";b.textContent=category;
+    b.onclick=()=>renderEmojiCategory(category);bar.appendChild(b);
+    if(index===0)renderEmojiCategory(category);
   });
   $("emojiPicker").classList.remove("hidden");
 }
@@ -907,7 +911,7 @@ function renderEditors(){
     row.append(
       makeButton("⬆️","move",()=>move(state.rewards,i,-1),i===0),
       makeButton("⬇️","move",()=>move(state.rewards,i,1),i===state.rewards.length-1),
-      makeInput(r[0],v=>{state.rewards[i][0]=v||"🎁";persist()},{style:"max-width:70px"}),
+      (()=>{const b=document.createElement("button");b.type="button";b.className="icon-pick-btn";b.textContent=r[0]||"🎁";b.title="Choose reward icon";b.onclick=()=>openEmojiPicker(em=>{state.rewards[i][0]=em;persist()},"reward");return b})(),
       makeInput(r[1],v=>{state.rewards[i][1]=v||"Reward";persist()}),
       makeInput(r[2],v=>{state.rewards[i][2]=Math.max(0,Number(v)||0);persist()},{type:"number",style:"max-width:84px"}),
       makeButton("×","danger",()=>{state.rewards.splice(i,1);persist()})
