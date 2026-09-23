@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.7</title>
+<title>Kids Points Public Family V18.7.1</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -82,10 +82,10 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 .sound-select{width:100%;padding:12px;border:1px solid #d9d2e5;border-radius:12px;background:#fff;font-size:16px}
 </style>
 </head>
-<body><div id='loadingBanner' style='display:none;position:sticky;top:0;background:#eef8ff;padding:8px;border-bottom:1px solid #cfe8ff;font-weight:600;z-index:9999'>☁️ Loading your family…</div>
+<body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Public Family V18.7</div>
+  <div class="sub">Family & Multiple Children · Public Family V18.7.1</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -144,12 +144,11 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
           <button class="btn danger hidden" id="signOutBtn">Sign out</button>
         </div>
         <div id="resetBox" class="hidden">
-          <label>Reset email</label>
-          <input id="resetEmail" type="email">
-          <div class="row">
-            <button class="btn secondary" id="copyLoginEmailBtn">Use sign-in email</button>
-            <button class="btn primary" id="sendResetBtn">Send reset email</button>
-          </div>
+          <h3 style="margin-bottom:6px">Forgot password?</h3>
+          <div class="small" style="margin-bottom:8px">Enter the email address you use for Kids Points. We’ll email you a link to choose a new password.</div>
+          <label>Email address</label>
+          <input id="resetEmail" type="email" autocomplete="email" placeholder="your@email.com">
+          <button class="btn primary wide" id="sendResetBtn" style="margin-top:8px">Reset password</button>
         </div>
         <div id="authMessage" class="notice hidden"></div>
         <div id="ownerUidBox" class="hidden" style="margin-top:12px">
@@ -612,6 +611,7 @@ let isAppAdmin=false;
 let children=[],activeChildId=null,state=cloneDefaults();
 let unsubFamily=null,unsubChildren=null;
 let firebaseReady=false;
+let familyLoading=true;
 
 function showMsg(id,msg,ok=false){
   const el=$(id); el.textContent=msg; el.classList.remove("hidden","notice","ok"); el.classList.add(ok?"ok":"notice");
@@ -655,6 +655,7 @@ async function writeFamilyStats(patch={}){
 async function loadAdminDashboard(){
   if(!isAppAdmin||!db)return;
   try{
+    await refreshOwnFamilyStats();
     const {collection,getDocs}=window.__fb;
     const snap=await getDocs(collection(db,"adminStats"));
     const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -832,8 +833,9 @@ function render(){
   $("childSwitcher").classList.toggle("hidden",children.length<2);
 
   if(!haveChild){
-    $("title").textContent="🌟 Kids Points";
-    $("points").textContent="0"; $("todayEarned").textContent="0";
+    $("title").textContent=familyLoading?"☁️ Loading your family…":"🌟 Kids Points";
+    $("points").textContent=familyLoading?"…":"0";
+    $("todayEarned").textContent=familyLoading?"…":"0";
     renderChildrenUI(); return;
   }
 
@@ -1073,9 +1075,33 @@ async function joinFamily(){
 
 function clearSubs(){if(unsubFamily){unsubFamily();unsubFamily=null}if(unsubChildren){unsubChildren();unsubChildren=null}}
 
+function goHomeTop(){
+  $("activityView").classList.remove("hidden");
+  $("parentView").classList.add("hidden");
+  $("adminView").classList.add("hidden");
+  $("activitiesTab").classList.add("active");
+  $("parentTab").classList.remove("active");
+  $("adminTab").classList.remove("active");
+  window.scrollTo({top:0,left:0,behavior:"auto"});
+}
+
+async function refreshOwnFamilyStats(){
+  if(!firebaseReady||!currentUser||!currentFamilyId||!db)return;
+  try{
+    const {collection,getDocs}=window.__fb;
+    const [membersSnap,childrenSnap]=await Promise.all([
+      getDocs(collection(db,"families",currentFamilyId,"members")),
+      getDocs(collection(db,"families",currentFamilyId,"children"))
+    ]);
+    await writeFamilyStats({memberCount:membersSnap.size,childCount:childrenSnap.size});
+  }catch(e){console.warn("Family statistics refresh failed",e)}
+}
+
 async function loadUserFamily(){
   clearSubs();
   if(!currentUser)return;
+  familyLoading=true;
+  render();
   const {doc,getDoc,onSnapshot,collection}=window.__fb;
   try{
     const u=await getDoc(doc(db,"users",currentUser.uid));
@@ -1086,6 +1112,7 @@ async function loadUserFamily(){
     showLegacyRecovery();
 
     if(!currentFamilyId){
+      familyLoading=false;
       children=[];activeChildId=null;render();
       $("syncBadge").textContent="☁️ Signed in";
       $("syncText").textContent="Create or join a family";
@@ -1101,6 +1128,8 @@ async function loadUserFamily(){
 
     unsubChildren=onSnapshot(collection(db,"families",currentFamilyId,"children"),snap=>{
       children=snap.docs.map(d=>({id:d.id,...d.data()}));
+      familyLoading=false;
+      refreshOwnFamilyStats();
       if(!children.length){activeChildId=null;render();return}
       const saved=storageGet("kpActiveChild17");
       if(!activeChildId||!children.some(c=>c.id===activeChildId)){
@@ -1111,6 +1140,8 @@ async function loadUserFamily(){
       $("syncText").textContent=currentUser.email||"Connected";
     });
   }catch(e){
+    familyLoading=false;
+    render();
     $("syncBadge").textContent="⚠️ Family load error";$("syncText").textContent=e.message;
   }
 }
@@ -1134,15 +1165,19 @@ async function initFirebase(){
       if(user) $("ownerUid").textContent=user.uid;
 
       if(!user){
+        familyLoading=false;
         clearSubs();currentFamilyId=null;currentFamily=null;children=[];activeChildId=null;isAppAdmin=false;
         $("adminTab").classList.add("hidden");$("adminView").classList.add("hidden");
         $("familySetup").classList.add("hidden");$("familyAdmin").classList.add("hidden");
         $("syncBadge").textContent="☁️ Ready";$("syncText").textContent="Sign in to sync";
         render();return;
       }
-      $("syncBadge").textContent="☁️ Connected";$("syncText").textContent=user.email||"Signed in";
-      await checkAppAdmin();
+      familyLoading=true;
+      goHomeTop();
+      render();
+      $("syncBadge").textContent="☁️ Loading";$("syncText").textContent="Loading your family…";
       await loadUserFamily();
+      checkAppAdmin();
     });
   }catch(e){
     $("syncBadge").textContent="⚠️ Cloud connection error";$("syncText").textContent=e.message;
@@ -1150,18 +1185,17 @@ async function initFirebase(){
 }
 
 $("undoLastEarnedBtn").onclick=undoLastEarned;
-$("activitiesTab").onclick=()=>{
-  $("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");$("adminView").classList.add("hidden");
-  $("activitiesTab").classList.add("active");$("parentTab").classList.remove("active");$("adminTab").classList.remove("active");
-}
+$("activitiesTab").onclick=()=>goHomeTop()
 $("parentTab").onclick=()=>{
   $("parentView").classList.remove("hidden");$("activityView").classList.add("hidden");$("adminView").classList.add("hidden");
   $("parentTab").classList.add("active");$("activitiesTab").classList.remove("active");$("adminTab").classList.remove("active");
+  window.scrollTo({top:0,left:0,behavior:"auto"});
 }
 $("adminTab").onclick=()=>{
   if(!isAppAdmin)return;
   $("adminView").classList.remove("hidden");$("parentView").classList.add("hidden");$("activityView").classList.add("hidden");
   $("adminTab").classList.add("active");$("parentTab").classList.remove("active");$("activitiesTab").classList.remove("active");
+  window.scrollTo({top:0,left:0,behavior:"auto"});
   loadAdminDashboard();
 }
 
@@ -1243,13 +1277,29 @@ $("createAccountBtn").onclick=async()=>{
   catch(e){showMsg("authMessage","Could not create account: "+e.message)}
 };
 $("signOutBtn").onclick=()=>window.__fb.signOut(auth);
-$("forgotPasswordBtn").onclick=()=>{$("resetBox").classList.toggle("hidden");$("resetEmail").value=$("loginEmail").value.trim()}
-$("copyLoginEmailBtn").onclick=()=>{$("resetEmail").value=$("loginEmail").value.trim()}
+$("forgotPasswordBtn").onclick=()=>{
+  $("resetBox").classList.remove("hidden");
+  $("resetEmail").value=$("loginEmail").value.trim();
+  $("resetEmail").focus();
+  $("resetBox").scrollIntoView({behavior:"smooth",block:"center"});
+}
 $("sendResetBtn").onclick=async()=>{
-  const email=$("resetEmail").value.trim()||$("loginEmail").value.trim();
-  if(!validEmail(email)){showMsg("authMessage","Please enter the exact parent email.");return}
-  try{await window.__fb.sendPasswordResetEmail(auth,email);showMsg("authMessage","✅ Firebase accepted the reset request. Check Inbox, Spam/Junk and Promotions.",true)}
-  catch(e){showMsg("authMessage","Could not send reset email: "+e.message)}
+  const email=$("resetEmail").value.trim();
+  if(!validEmail(email)){showMsg("authMessage","Please enter a valid email address.");return}
+  const btn=$("sendResetBtn");
+  btn.disabled=true;btn.textContent="Sending…";
+  try{
+    await window.__fb.sendPasswordResetEmail(auth,email);
+    showMsg("authMessage","📧 Check your email. We’ve sent you a link to choose a new password. Please also check Spam/Junk if you can’t find it.",true);
+  }catch(e){
+    const code=e?.code||"";
+    let msg="We couldn’t send the password reset email. Please check the email address and try again.";
+    if(code==="auth/invalid-email")msg="Please enter a valid email address.";
+    else if(code==="auth/too-many-requests")msg="Too many attempts. Please wait a little while and try again.";
+    showMsg("authMessage",msg);
+  }finally{
+    btn.disabled=false;btn.textContent="Reset password";
+  }
 };
 
 render();
@@ -1270,5 +1320,5 @@ showLegacyRecovery();
   </div>
 </div>
 
-<script>(function(){const b=document.getElementById('loadingBanner');if(b){b.style.display='block';window.addEventListener('load',()=>{setTimeout(()=>b.style.display='none',700);window.scrollTo({top:0,behavior:'smooth'});});}})();</script></body>
+</body>
 </html>
