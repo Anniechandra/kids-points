@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.7.1</title>
+<title>Kids Points Public Family V18.7.2</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -85,7 +85,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Public Family V18.7.1</div>
+  <div class="sub">Family & Multiple Children · Public Family V18.7.2</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -145,7 +145,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
         </div>
         <div id="resetBox" class="hidden">
           <h3 style="margin-bottom:6px">Forgot password?</h3>
-          <div class="small" style="margin-bottom:8px">Enter the email address you use for Kids Points. We’ll email you a link to choose a new password.</div>
+          <div class="small" style="margin-bottom:8px">Enter the email address you use for Kids Points.</div>
           <label>Email address</label>
           <input id="resetEmail" type="email" autocomplete="email" placeholder="your@email.com">
           <button class="btn primary wide" id="sendResetBtn" style="margin-top:8px">Reset password</button>
@@ -1076,32 +1076,21 @@ async function joinFamily(){
 function clearSubs(){if(unsubFamily){unsubFamily();unsubFamily=null}if(unsubChildren){unsubChildren();unsubChildren=null}}
 
 function goHomeTop(){
-  $("activityView").classList.remove("hidden");
-  $("parentView").classList.add("hidden");
-  $("adminView").classList.add("hidden");
-  $("activitiesTab").classList.add("active");
-  $("parentTab").classList.remove("active");
-  $("adminTab").classList.remove("active");
+  $("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");$("adminView").classList.add("hidden");
+  $("activitiesTab").classList.add("active");$("parentTab").classList.remove("active");$("adminTab").classList.remove("active");
   window.scrollTo({top:0,left:0,behavior:"auto"});
 }
-
 async function refreshOwnFamilyStats(){
   if(!firebaseReady||!currentUser||!currentFamilyId||!db)return;
   try{
     const {collection,getDocs}=window.__fb;
-    const [membersSnap,childrenSnap]=await Promise.all([
-      getDocs(collection(db,"families",currentFamilyId,"members")),
-      getDocs(collection(db,"families",currentFamilyId,"children"))
-    ]);
-    await writeFamilyStats({memberCount:membersSnap.size,childCount:childrenSnap.size});
+    const [m,c]=await Promise.all([getDocs(collection(db,"families",currentFamilyId,"members")),getDocs(collection(db,"families",currentFamilyId,"children"))]);
+    await writeFamilyStats({memberCount:m.size,childCount:c.size});
   }catch(e){console.warn("Family statistics refresh failed",e)}
 }
-
 async function loadUserFamily(){
-  clearSubs();
-  if(!currentUser)return;
-  familyLoading=true;
-  render();
+  clearSubs();if(!currentUser)return;
+  familyLoading=true;render();
   const {doc,getDoc,onSnapshot,collection}=window.__fb;
   try{
     const u=await getDoc(doc(db,"users",currentUser.uid));
@@ -1112,8 +1101,7 @@ async function loadUserFamily(){
     showLegacyRecovery();
 
     if(!currentFamilyId){
-      familyLoading=false;
-      children=[];activeChildId=null;render();
+      familyLoading=false;children=[];activeChildId=null;render();
       $("syncBadge").textContent="☁️ Signed in";
       $("syncText").textContent="Create or join a family";
       return;
@@ -1127,9 +1115,7 @@ async function loadUserFamily(){
     });
 
     unsubChildren=onSnapshot(collection(db,"families",currentFamilyId,"children"),snap=>{
-      children=snap.docs.map(d=>({id:d.id,...d.data()}));
-      familyLoading=false;
-      refreshOwnFamilyStats();
+      children=snap.docs.map(d=>({id:d.id,...d.data()}));familyLoading=false;refreshOwnFamilyStats();
       if(!children.length){activeChildId=null;render();return}
       const saved=storageGet("kpActiveChild17");
       if(!activeChildId||!children.some(c=>c.id===activeChildId)){
@@ -1140,8 +1126,6 @@ async function loadUserFamily(){
       $("syncText").textContent=currentUser.email||"Connected";
     });
   }catch(e){
-    familyLoading=false;
-    render();
     $("syncBadge").textContent="⚠️ Family load error";$("syncText").textContent=e.message;
   }
 }
@@ -1165,19 +1149,15 @@ async function initFirebase(){
       if(user) $("ownerUid").textContent=user.uid;
 
       if(!user){
-        familyLoading=false;
-        clearSubs();currentFamilyId=null;currentFamily=null;children=[];activeChildId=null;isAppAdmin=false;
+        familyLoading=false;clearSubs();currentFamilyId=null;currentFamily=null;children=[];activeChildId=null;isAppAdmin=false;
         $("adminTab").classList.add("hidden");$("adminView").classList.add("hidden");
         $("familySetup").classList.add("hidden");$("familyAdmin").classList.add("hidden");
         $("syncBadge").textContent="☁️ Ready";$("syncText").textContent="Sign in to sync";
         render();return;
       }
-      familyLoading=true;
-      goHomeTop();
-      render();
+      familyLoading=true;goHomeTop();render();
       $("syncBadge").textContent="☁️ Loading";$("syncText").textContent="Loading your family…";
-      await loadUserFamily();
-      checkAppAdmin();
+      await loadUserFamily();checkAppAdmin();
     });
   }catch(e){
     $("syncBadge").textContent="⚠️ Cloud connection error";$("syncText").textContent=e.message;
@@ -1185,17 +1165,18 @@ async function initFirebase(){
 }
 
 $("undoLastEarnedBtn").onclick=undoLastEarned;
-$("activitiesTab").onclick=()=>goHomeTop()
+$("activitiesTab").onclick=()=>{
+  $("activityView").classList.remove("hidden");$("parentView").classList.add("hidden");$("adminView").classList.add("hidden");
+  $("activitiesTab").classList.add("active");$("parentTab").classList.remove("active");$("adminTab").classList.remove("active");
+}
 $("parentTab").onclick=()=>{
   $("parentView").classList.remove("hidden");$("activityView").classList.add("hidden");$("adminView").classList.add("hidden");
   $("parentTab").classList.add("active");$("activitiesTab").classList.remove("active");$("adminTab").classList.remove("active");
-  window.scrollTo({top:0,left:0,behavior:"auto"});
 }
 $("adminTab").onclick=()=>{
   if(!isAppAdmin)return;
   $("adminView").classList.remove("hidden");$("parentView").classList.add("hidden");$("activityView").classList.add("hidden");
   $("adminTab").classList.add("active");$("parentTab").classList.remove("active");$("activitiesTab").classList.remove("active");
-  window.scrollTo({top:0,left:0,behavior:"auto"});
   loadAdminDashboard();
 }
 
@@ -1278,28 +1259,23 @@ $("createAccountBtn").onclick=async()=>{
 };
 $("signOutBtn").onclick=()=>window.__fb.signOut(auth);
 $("forgotPasswordBtn").onclick=()=>{
-  $("resetBox").classList.remove("hidden");
-  $("resetEmail").value=$("loginEmail").value.trim();
-  $("resetEmail").focus();
+  $("resetBox").classList.remove("hidden");$("resetEmail").value=$("loginEmail").value.trim();$("resetEmail").focus();
   $("resetBox").scrollIntoView({behavior:"smooth",block:"center"});
 }
 $("sendResetBtn").onclick=async()=>{
   const email=$("resetEmail").value.trim();
   if(!validEmail(email)){showMsg("authMessage","Please enter a valid email address.");return}
-  const btn=$("sendResetBtn");
-  btn.disabled=true;btn.textContent="Sending…";
+  const btn=$("sendResetBtn");btn.disabled=true;btn.textContent="Sending…";
   try{
     await window.__fb.sendPasswordResetEmail(auth,email);
-    showMsg("authMessage","📧 Check your email. We’ve sent you a link to choose a new password. Please also check Spam/Junk if you can’t find it.",true);
+    showMsg("authMessage","📧 If an account exists for this email, a password reset link has been sent. Please check Inbox and Spam/Junk.",true);
   }catch(e){
     const code=e?.code||"";
-    let msg="We couldn’t send the password reset email. Please check the email address and try again.";
+    let msg="We couldn’t send the password reset request. Please check the email address and try again.";
     if(code==="auth/invalid-email")msg="Please enter a valid email address.";
     else if(code==="auth/too-many-requests")msg="Too many attempts. Please wait a little while and try again.";
     showMsg("authMessage",msg);
-  }finally{
-    btn.disabled=false;btn.textContent="Reset password";
-  }
+  }finally{btn.disabled=false;btn.textContent="Reset password";}
 };
 
 render();
