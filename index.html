@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#7a3cff">
-<title>Kids Points Public Family V18.7.2</title>
+<title>Kids Points Public Family V18.7.3</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f7f4ff;color:#24202f}
@@ -28,7 +28,7 @@ h1{margin:0;text-align:center;font-size:34px}
 .reward{width:100%;border:0;background:#fff;border-radius:18px;padding:15px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 3px 12px #0000000d}
 .cost{font-weight:900;color:#6f3cff;white-space:nowrap}
 .history,.detail,.panel{background:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 3px 12px #00000010}
-.history-row,.detail-row{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid #eee}
+.history-row,.detail-row{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid #eee}.history-row{cursor:pointer;border-radius:10px}.history-row:hover{background:#faf8ff}.history-row:active{background:#f1ebff}
 .history-row:last-child,.detail-row:last-child{border-bottom:0}
 .history-date,.detail-name{font-weight:800}.history-points,.detail-points{font-weight:900;color:#168a45}
 .empty{color:#999}.small{font-size:13px;color:#8f8997}
@@ -85,7 +85,7 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 <body>
 <div class="app">
   <h1 id="title">🌟 Kids Points</h1>
-  <div class="sub">Family & Multiple Children · Public Family V18.7.2</div>
+  <div class="sub">Family & Multiple Children · Public Family V18.7.3</div>
 
   <div id="signedInArea">
     <div id="childSwitcher" class="child-switcher hidden"></div>
@@ -121,6 +121,14 @@ input{width:100%;padding:11px 12px;border:1px solid #ddd7e8;border-radius:12px;f
 
       <h2 class="section">📅 Daily Points</h2>
       <div class="history" id="dailyHistory"></div>
+      <div class="panel hidden" id="selectedDayPanel" style="margin-top:10px">
+        <div class="row" style="margin:0 0 8px">
+          <b id="selectedDayTitle">Daily details</b>
+          <button class="btn secondary" id="closeSelectedDayBtn" style="padding:7px 10px">Close</button>
+        </div>
+        <div id="selectedDayDetails"></div>
+      </div>
+      <div class="small" style="margin-top:7px">Tap any date to see exactly what points were earned that day. Daily totals and details are kept for at least one month.</div>
 
       <h2 class="section">🧾 What was earned today</h2>
       <button class="btn secondary wide" id="undoLastEarnedBtn" style="margin-bottom:8px">↩ Undo last earned point</button>
@@ -749,12 +757,41 @@ function persist(){
   window.__saveTimer=setTimeout(saveChild,300);
 }
 
+function pruneDailyHistory(retainDays=90){
+  const cutoff=new Date();cutoff.setHours(0,0,0,0);cutoff.setDate(cutoff.getDate()-(retainDays-1));
+  for(const obj of [state.dailyEarned,state.dailyDetails]){
+    if(!obj||typeof obj!=="object")continue;
+    Object.keys(obj).forEach(k=>{
+      const d=new Date(k+"T00:00:00");
+      if(!Number.isNaN(d.getTime()) && d<cutoff)delete obj[k];
+    });
+  }
+}
+function showDayDetails(k,label){
+  const panel=$("selectedDayPanel"),box=$("selectedDayDetails");
+  $("selectedDayTitle").textContent=`🧾 ${label} — ${Number(state.dailyEarned[k]||0)} ⭐`;
+  box.innerHTML="";
+  const entries=Array.isArray(state.dailyDetails[k])?state.dailyDetails[k]:[];
+  if(!entries.length){
+    box.innerHTML='<div class="empty">No individual point details were saved for this day.</div>';
+  }else{
+    entries.forEach(e=>{
+      const row=document.createElement("div");row.className="detail-row";
+      const left=document.createElement("span");left.className="detail-name";left.textContent=e.label||"Earned points";
+      const right=document.createElement("span");right.className="detail-points";right.textContent=`+${Number(e.pts)||0} ⭐`;
+      row.append(left,right);box.appendChild(row);
+    });
+  }
+  panel.classList.remove("hidden");
+  panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
 function addPoints(n,label){
   n=Number(n)||0;
   const oldPoints=Number(state.points)||0;
   state.points=Math.max(0,oldPoints+n);
   let milestoneToCelebrate=0;
   if(n>0){
+    pruneDailyHistory(90);
     const k=dateKey();
     state.dailyEarned[k]=(Number(state.dailyEarned[k])||0)+n;
     if(!Array.isArray(state.dailyDetails[k]))state.dailyDetails[k]=[];
@@ -861,11 +898,12 @@ function render(){
   });
 
   const hist=$("dailyHistory");hist.innerHTML="";
-  for(let i=0;i<7;i++){
+  for(let i=0;i<31;i++){
     const d=new Date();d.setDate(d.getDate()-i);const k=dateKey(d);
     const row=document.createElement("div");row.className="history-row";
     const lab=i===0?"Today":i===1?"Yesterday":d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
-    row.innerHTML=`<span class="history-date">${lab}</span><span class="history-points">${Number(state.dailyEarned[k]||0)} ⭐</span>`;
+    row.innerHTML=`<span class="history-date">${lab} <span class="small">› tap for details</span></span><span class="history-points">${Number(state.dailyEarned[k]||0)} ⭐</span>`;
+    row.onclick=()=>showDayDetails(k,lab);
     hist.appendChild(row);
   }
 
@@ -1195,6 +1233,7 @@ $("addActivity").onclick=()=>{state.activities.push(["⭐","New activity",1]);pe
 $("addReward").onclick=()=>{state.rewards.push(["🎁","New reward",20]);persist()}
 $("addManual").onclick=()=>addPoints(Number($("manualPoints").value)||0,"Manual points")
 $("subManual").onclick=()=>{state.points=Math.max(0,state.points-(Number($("manualPoints").value)||0));persist()}
+$("closeSelectedDayBtn").onclick=()=>$("selectedDayPanel").classList.add("hidden");
 $("resetPointsBtn").onclick=()=>{if(confirm("Reset current points to 0? Activities, rewards and daily history will NOT be deleted.")){state.points=0;state.highestMilestone=0;persist();alert("Current points have been reset to 0. Milestone celebrations will start again from 10 points.")}}
 
 
